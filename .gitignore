@@ -1,0 +1,22 @@
+# dependencies
+node_modules/
+venv/
+
+# testing
+/coverage
+
+# production
+react/dist
+react/tmp
+react/public
+flask/**/*.json
+
+# misc
+*.db
+__pycache__
+*.env
+*_history
+.DS_Store
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*

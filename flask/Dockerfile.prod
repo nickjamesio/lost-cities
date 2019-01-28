@@ -1,0 +1,12 @@
+FROM python:3.6-alpine
+
+RUN adduser -D api
+
+WORKDIR /home/api
+
+COPY requirements.txt requirements.txt
+RUN pip install -r requirements.txt
+
+COPY . .
+
+CMD gunicorn -b 0.0.0.0:80 --access-logfile - --error-logfile - src:app
