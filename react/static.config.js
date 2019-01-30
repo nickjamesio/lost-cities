@@ -19,17 +19,17 @@ export default {
   getSiteData: () => ({
     title: 'React Static',
   }),
-  getRoutes: async () => {
-    // const data = await fetch(
-    //   'https://jsonplaceholder.typicode.com/posts'
-    // ).then(data => data.json())
-    return [
-      {
-        path: '/products',
-        component: 'src/containers/Products',
-      },
-    ]
-  },
+  // getRoutes: async () => {
+  //   // const data = await fetch(
+  //   //   'https://jsonplaceholder.typicode.com/posts'
+  //   // ).then(data => data.json())
+  //   return [
+  //     {
+  //       path: '/',
+  //       component: 'src/containers/Game',
+  //     },
+  //   ]
+  // },
   devServer: {
     host: '0.0.0.0',
   }

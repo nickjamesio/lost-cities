@@ -8,7 +8,7 @@ services:
    expose:
      - '80'
    volumes:
-     - ~/Projects/react_static_starter_project/react:/app
+     - ~/Projects/lost_cities/react:/app
    environment:
       VIRTUAL_HOST: localhost,www.localhost
       VIRTUAL_PORT: 3000
@@ -20,7 +20,7 @@ services:
     expose:
       - '80'
     volumes:
-      - ~/Projects/react_static_starter_project/flask:/home/api
+      - ~/Projects/lost_cities/flask:/home/api
     env_file:
       - flask/.dev.env
     environment:
