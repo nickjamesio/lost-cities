@@ -1,16 +1,16 @@
 version: '3.5'
 
 services:
- web:
+  web:
    build:
      context: ./react
      dockerfile: Dockerfile
    expose:
-     - '3000'
+     - '80'
    volumes:
      - ~/Projects/react_static_starter_project/react:/app
    environment:
-      VIRTUAL_HOST: domain.local,www.domain.local
+      VIRTUAL_HOST: localhost,www.localhost
       VIRTUAL_PORT: 3000
 
   api:
@@ -24,7 +24,7 @@ services:
     env_file:
       - flask/.dev.env
     environment:
-       VIRTUAL_HOST: api.local,www.api.local
+       VIRTUAL_HOST: api.localhost,www.api.localhost
        VIRTUAL_PORT: 80
 
 

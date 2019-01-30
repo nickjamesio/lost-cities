@@ -1,67 +1,22 @@
-import React, { PureComponent } from 'react'
-import { Router, Link } from 'react-static'
-import { hot } from 'react-hot-loader'
-//
-import Routes from 'react-static-routes'
+import React from 'react'
+import { Root, Routes } from 'react-static'
+import { Link } from '@reach/router'
 
-import CssBaseline from '@material-ui/core/CssBaseline'
-import AppBar from '@material-ui/core/AppBar'
-import Tabs from '@material-ui/core/Tabs'
-import Tab from '@material-ui/core/Tab'
-import { withStyles } from '@material-ui/core/styles'
+import './app.css'
 
-// Custom styles
-const styles = {
-  '@global': {
-    img: {
-      maxWidth: '100%',
-    },
-  },
-  appBar: {
-    flexWrap: 'wrap',
-  },
-  tabs: {
-    width: '100%',
-  },
-  content: {
-    padding: '1rem',
-  },
+function App() {
+  return (
+    <Root>
+      <nav>
+        <Link to="/">Home</Link>
+        <Link to="/products">Products</Link>
+        <Link to="/about">About</Link>
+      </nav>
+      <div className="content">
+        <Routes />
+      </div>
+    </Root>
+  )
 }
 
-class App extends PureComponent {
-  // Remove the server-side injected CSS.
-  componentDidMount () {
-    const jssStyles = document.getElementById('jss-server-side')
-    if (jssStyles && jssStyles.parentNode) {
-      jssStyles.parentNode.removeChild(jssStyles)
-    }
-  }
-
-  render () {
-    const { classes } = this.props
-
-    return (
-      <Router>
-        <div className={classes.container}>
-          <CssBaseline />
-          <AppBar className={classes.appBar} color="default" position="static">
-            <nav>
-              <Tabs className={classes.tabs} value={false}>
-                <Tab component={Link} to="/" label="Home" />
-                <Tab component={Link} to="/about" label="About" />
-                <Tab component={Link} to="/blog" label="Blog" />
-              </Tabs>
-            </nav>
-          </AppBar>
-          <div className={classes.content}>
-            <Routes />
-          </div>
-        </div>
-      </Router>
-    )
-  }
-}
-
-const AppWithStyles = withStyles(styles)(App)
-
-export default hot(module)(AppWithStyles)
+export default App
