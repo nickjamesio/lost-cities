@@ -19,7 +19,10 @@ const styles = {
         justifyContent: 'center',
         width: '6rem',
         height: '7rem',
-        backgroundColor: 'black'
+        backgroundColor: 'black',
+        '&.covered': {
+            height: '2rem'
+        }
     },
     image: {
         width: '5rem',
@@ -66,12 +69,12 @@ const styles = {
 };
 
 const Card = (props) => {
-    const { classes, type, value } = props;
+    const { classes, covered, type, value } = props;
     const image = classNames(classes[`${type}Bg`], type == 'back' ? classes.imageBack : classes.image);
     const textColor = classes[`${type}Text`];
 
     return (
-        <div className={classes.border}>
+        <div className={classNames(classes.border, covered ? 'covered' : null)}>
             {
                 type != 'back'
                     ? <>
@@ -82,19 +85,27 @@ const Card = (props) => {
                       </>
                     : null
             }
-            <div className={image} />
+
+            {
+                covered == false
+                    ? <div className={image} />
+                    : null
+            }
+            
         </div>
     );
 };
 
 Card.defaultProps = {
-    value: ''
+    value: '',
+    covered: false,
 };
 
 Card.propTypes = {
     type: PropTypes.oneOf(
         ['red', 'blue', 'white', 'green', 'yellow', 'back']
     ).isRequired,
+    covered: PropTypes.bool
 };
 
 export default withStyles(styles)(Card);
