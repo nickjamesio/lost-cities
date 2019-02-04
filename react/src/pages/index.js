@@ -1,102 +1,100 @@
-import React, { Component } from 'react';
-import { withRouteData } from 'react-static';
+import React, { Component } from "react";
+import { withRouteData } from "react-static";
+import { Grid } from "@material-ui/core";
 
-import Header from '../components/Header';
-import Card from '../components/Card';
-import CardStack from '../components/CardStack';
-import CardStacks from '../components/CardStacks';
-import Board from '../components/Board';
+import Header from "../components/Header";
+import CardStacks from "../components/CardStacks";
+import Board from "../components/Board";
+import Hand from "../components/Hand";
+import { newGame } from "../utils/api";
 
 class Game extends Component {
   constructor(props) {
     super(props);
     this.state = {
       discardPile: {
-        red: [
-          {value: 'h', type: 'red'},
-        ],
+        red: [],
         green: [],
         white: [],
         blue: [],
-        yellow: [],
+        yellow: []
       },
       me: {
-        name: '',
+        name: "",
         hand: [],
         score: 0,
-        cardsPlayed: {
+        played: {
           red: [],
           green: [],
           white: [],
           blue: [],
-          yellow: [],
+          yellow: []
         }
       },
       opponent: {
-        name: '',
+        name: "",
         score: 0,
-        cardsPlayed: {
-          red: [
-            {value: 'h', type: 'red'},
-            {value: 'h', type: 'red'},
-            {value: 'h', type: 'red'},
-            {value: '2', type: 'red'},
-            {value: '3', type: 'red'},
-            {value: '4', type: 'red'},
-            {value: '5', type: 'red'},
-            {value: '6', type: 'red'},
-            {value: '7', type: 'red'},
-            {value: '8', type: 'red'},
-            {value: '9', type: 'red'},
-            {value: '10', type: 'red'}
-          ],
-          green: [
-            {value: '7', type: 'green'},
-            {value: '8', type: 'green'},
-            {value: '9', type: 'green'},
-            {value: '10', type: 'green'}
-          ],
-          white: [
-            {value: '7', type: 'white'},
-            {value: '8', type: 'white'},
-            {value: '9', type: 'white'},
-            {value: '10', type: 'white'}
-          ],
-          blue: [
-            {value: '7', type: 'blue'},
-            {value: '8', type: 'blue'},
-            {value: '9', type: 'blue'},
-            {value: '10', type: 'blue'}
-          ],
-          yellow: [
-            {value: '7', type: 'yellow'},
-            {value: '8', type: 'yellow'},
-            {value: '9', type: 'yellow'},
-            {value: '10', type: 'yellow'}
-          ],
+        played: {
+          red: [],
+          green: [],
+          white: [],
+          blue: [],
+          yellow: []
         }
       },
       currentPlayer: {},
-    }
+      selectedCard: null
+    };
+
+    this.handleClickCard = this.handleClickCard.bind(this);
+  }
+
+  handleClickCard(e, position) {
+    this.setState(prevState => ({
+      selectedCard: position === prevState.selectedCard ? null : position 
+    }));
   }
 
   componentDidMount() {
-    fetch('http://api.localhost/products')
-      .then(response => response.json())
-      .then(({data}) => this.setState({products: data}))
+    const thang = data => {
+      const x = 1;
+      this.setState({
+        discardPile: data.discardPile,
+        me: data.playerOne,
+        opponent: data.playerTwo,
+        drawPile: data.drawPile
+      });
+    };
+    newGame()
+      .then(thang)
       .catch(error => console.error(error));
   }
 
   render() {
     const { data } = this.props;
-    const { drawPile, discardPile, players, currentPlayer, me, opponent } = this.state;
+    const {
+      drawPile,
+      discardPile,
+      players,
+      currentPlayer,
+      me,
+      opponent,
+      selectedCard
+    } = this.state;
 
     return (
       <>
         <Header currentPlayer={currentPlayer} player={me} />
-        <CardStacks stacks={opponent.cardsPlayed} direction="bottom" />
+        <CardStacks stacks={opponent.played} direction="bottom" />
         <Board discardPile={discardPile} />
-        <CardStacks stacks={opponent.cardsPlayed} direction="top" />
+        <Grid container directoin="row">
+          <CardStacks stacks={me.played} direction="top" />
+          <Hand
+            selectedCard={selectedCard}
+            cards={me.hand}
+            handleClick={this.handleClickCard}
+          />
+        </Grid>
       </>
     );
   }

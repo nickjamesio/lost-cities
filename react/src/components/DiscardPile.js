@@ -11,8 +11,8 @@ import Card from '../components/Card';
 
 const styles = {
     discard: {
-        width: '7rem',
-        height: '9rem',
+        width: '6rem',
+        height: '8rem',
         '&.red': {
             backgroundImage: `url(${RedDiscard})`,
         },
@@ -55,15 +55,15 @@ const styles = {
 };
 
 const DiscardPile = (props) => {
-    const { classes, card, type } = props;
-    const discardClasses = classNames(classes.discard, type);
-    const overlayClasses = classNames(classes.overlay, type);
+    const { classes, cards, color } = props;
+    const discardClasses = classNames(classes.discard, color);
+    const overlayClasses = classNames(classes.overlay, color);
+    const card = cards.length > 0 ? cards[cards.length - 1] : null
 
     return (
-        
             <div className={discardClasses}>
                 <div className={overlayClasses}>
-                    {card ? <Card type={card.type} value={card.value} /> : null}
+                    {card ? <Card type={color} value={card} /> : null}
                 </div>
             </div>
     );

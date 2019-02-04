@@ -7,6 +7,7 @@ const styles = {
     root: {
         display: 'flex',
         maxWidth: '70rem',
+        minWidth: '70rem',
         justifyContent: 'space-between',
         marginLeft: '10rem'
     },
@@ -22,7 +23,13 @@ const CardStacks = (props) => {
     return (
         <div className={classes.root}>
             {stackOrder.map(color => {
-                return <CardStack className={classes.stack} direction={direction} cards={stacks[color]} />
+                return <CardStack
+                            key={color}
+                            className={classes.stack}
+                            direction={direction}
+                            type={color}
+                            cards={stacks[color]}
+                        />
             })}
         </div>
     );

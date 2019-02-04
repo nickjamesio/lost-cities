@@ -19,8 +19,7 @@ const DiscardPiles = (props) => {
     return (
         <div className={classes.root}>
             {pileOrder.map(color => {
-                const card = piles[color].length > 0 ? piles[color][piles[color].length - 1] : null
-                return <DiscardPile type={color} card={card} />
+                return <DiscardPile color={color} cards={piles[color]} />
             })}
         </div>
     );

@@ -10,6 +10,8 @@ const styles = {
         display: 'flex',
         flexDirection: 'column',
         paddingLeft: '0.5rem',
+        minWidth: '6rem',
+        minHeight: '7rem'
     },
     bottom: {
         justifyContent: 'flex-end'
@@ -20,7 +22,13 @@ const styles = {
 };
 
 const CardStack = (props) => {
-    const { cards, classes, className: classNameProp, direction } = props;
+    const {
+        cards,
+        type,
+        classes,
+        className: classNameProp,
+        direction
+    } = props;
     const className = classNames(
         classes.root,
         classNameProp,
@@ -28,11 +36,11 @@ const CardStack = (props) => {
 
     return (
         <div className={className}>
-            {cards.map((card, index) => (
+            {cards.map((value, index) => (
                 <Card
                     key={index}
-                    type={card.type}
-                    value={card.value}
+                    type={type}
+                    value={value}
                     covered={index !== cards.length - 1}
                 />
             ))}

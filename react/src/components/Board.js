@@ -1,25 +1,27 @@
 import React from 'react';
 import { Grid, withStyles } from '@material-ui/core';
 import DiscardPiles from '../components/DiscardPiles';
+import DrawPile from '../components/DrawPile';
 
 const styles = {
     root: {
         width: '100%',
-        height: '12rem',
+        height: '10rem',
         backgroundColor: '#6D3F14',
     },
-    container: {
-        display: 'flex',
-        maxWidth: '1000rem'
-    },
+    spacing: {
+        marginLeft: '5rem'
+    }
+
 };
 
 const Board = (props) => {
     const { classes, discardPile } = props;
 
     return (
-        <Grid container justify="space-between" alignItems="center" className={classes.root}>
+        <Grid container alignItems="center" className={classes.root}>
             <DiscardPiles piles={discardPile} />
+            <DrawPile className={classes.spacing} />
         </Grid>
     );
 }

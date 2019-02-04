@@ -10,16 +10,16 @@ db = SQLAlchemy(app)
 api = Api(app)
 
 # Enable CORS
-if app.env == 'production':
-    CORS(app, origins=["https://DOMAIN.com", "https://www.DOMAIN.com"])
-else:
-    CORS(app)
+# if app.env == 'production':
+#     CORS(app, origins=["https://DOMAIN.com", "https://www.DOMAIN.com"])
+# else:
+CORS(app)
 
 db.init_app(app)
 
 from src.models import *
-from src.resources.product import Product, ProductList
+from src.resources.game import Game, GameList
 
 # Examples
-api.add_resource(ProductList, '/products')
-api.add_resource(Product, '/product/<int:pid>')
+api.add_resource(GameList, '/games')
+api.add_resource(Game, '/games/<int:pid>')
