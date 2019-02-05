@@ -84,6 +84,7 @@ const Card = props => {
   const className = classNames(
     classes.border,
     classNameProp,
+    covered ? "covered" : null
   );
 
   return (

@@ -1,5 +1,5 @@
 import React from "react";
-import { Grid, withStyles } from "@material-ui/core";
+import { Grid, withStyles, Button } from "@material-ui/core";
 import classNames from "classnames";
 
 import Card from "../components/Card";
@@ -21,7 +21,14 @@ const styles = {
 };
 
 const Hand = props => {
-  const { cards, classes, handleClick, selectedCard } = props;
+  const {
+    cards,
+    classes,
+    handleClickCard,
+    handleClickPlay,
+    handleClickDiscard,
+    selectedCard
+  } = props;
 
   return (
     <div className={classes.root}>
@@ -32,17 +39,22 @@ const Hand = props => {
               classes.cardWrapper,
               index === selectedCard ? classes.clicked : null
             )}
-            onClick={e => handleClick(e, index)}
+            onClick={e => handleClickCard(e, index)}
           >
             <Card
               key={index}
               clickable
               type={card.type}
               value={card.value}
-              clickHandler={handleClick}
             />
           </div>
         ))}
+      </Grid>
+      <Grid container>
+        <Button variant="contained" onClick={handleClickPlay}>
+          Play
+        </Button>
+        <Button variant="contained" onClick={handleClickDiscard}>Discard</Button>
       </Grid>
     </div>
   );

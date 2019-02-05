@@ -16,12 +16,12 @@ const styles = {
 };
 
 const Board = (props) => {
-    const { classes, discardPile } = props;
+    const { classes, discardPile, drawPile } = props;
 
     return (
         <Grid container alignItems="center" className={classes.root}>
             <DiscardPiles piles={discardPile} />
-            <DrawPile className={classes.spacing} />
+            <DrawPile className={classes.spacing} drawPile={drawPile} />
         </Grid>
     );
 }

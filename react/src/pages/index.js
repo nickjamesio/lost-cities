@@ -43,15 +43,50 @@ class Game extends Component {
         }
       },
       currentPlayer: {},
+      drawPile: [],
       selectedCard: null
     };
 
     this.handleClickCard = this.handleClickCard.bind(this);
+    this.handleClickPlay = this.handleClickPlay.bind(this);
+    this.handleClickDiscard = this.handleClickDiscard.bind(this);
+  }
+
+  handleClickPlay(e) {
+    const { selectedCard } = this.state;
+
+    if (selectedCard !== null) {
+      this.setState(({me, selectedCard}) => {
+        const card = me.hand[selectedCard];
+        me.played[card.type].push(card.value);
+        me.hand.splice(selectedCard, 1);
+        return {
+          me,
+          selectedCard: null
+        };
+      });
+    }
+  }
+
+  handleClickDiscard(e) {
+    const { selectedCard } = this.state;
+
+    if (selectedCard !== null) {
+      this.setState(({me, discardPile, selectedCard}) => {
+        const card = me.hand[selectedCard];
+        discardPile[card.type].push(card.value);
+        me.hand.splice(selectedCard, 1);
+        return {
+          discardPile,
+          selectedCard: null
+        };
+      });
+    }
   }
 
   handleClickCard(e, position) {
     this.setState(prevState => ({
-      selectedCard: position === prevState.selectedCard ? null : position 
+      selectedCard: position === prevState.selectedCard ? null : position
     }));
   }
 
@@ -86,13 +121,15 @@ class Game extends Component {
       <>
         <Header currentPlayer={currentPlayer} player={me} />
         <CardStacks stacks={opponent.played} direction="bottom" />
-        <Board discardPile={discardPile} />
+        <Board discardPile={discardPile} drawPile={drawPile} />
         <Grid container directoin="row">
           <CardStacks stacks={me.played} direction="top" />
           <Hand
             selectedCard={selectedCard}
             cards={me.hand}
-            handleClick={this.handleClickCard}
+            handleClickCard={this.handleClickCard}
+            handleClickPlay={this.handleClickPlay}
+            handleClickDiscard={this.handleClickDiscard}
           />
         </Grid>
       </>
