@@ -9,11 +9,11 @@ import CardCount from '../components/CardCount';
 const styles = {};
 
 const DrawPile = (props) => {
-    const { className: classNameProp, drawPile } = props;
+    const { className: classNameProp, drawPile, handleClick } = props;
     const className = classNames(classNameProp);
 
     return (
-        <CardCount cards={drawPile} className={className}>
+        <CardCount cards={drawPile} className={className} handleClick={handleClick}>
             {() => <Card type="back" />}
         </CardCount>
     );

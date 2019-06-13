@@ -1,61 +1,36 @@
-import random
-from src import app
-from src import db
-from src.models.product import ProductModel
-from src.models.product_colors import ProductColorsModel
+from flask import Flask
+from flask_sqlalchemy import SQLAlchemy
+from flask_restful import Api
+from flask_cors import CORS
+from flask_socketio import SocketIO
+from src.config import Config
 
-@app.before_first_request
-def create_db():
-    db.create_all()
-    rows = ProductModel.query.count()
-    if not rows:
-        for _ in range(5):
-            create_product()
+app = Flask(__name__)
+app.config.from_object(Config)
+api = Api(app)
+socketio = SocketIO(app)
 
-TITLES = [
-    'I heart NY',
-    'Pizza is the best',
-    'You had me at tacos',
-    'Tacos are my Valentine',
-    'Happy New Year'
-]
+# Enable CORS
+# if app.env == 'production':
+#     CORS(app, origins=["https://DOMAIN.com", "https://www.DOMAIN.com"])
+# else:
+#     CORS(app)
 
-DESCRIPTIONS = [
-    'Awesome NY shirt',
-    'Awesome pizza shirt',
-    'Awesome taco shirt',
-    'Tacos stuff',
-    'New year shirt'
-]
+# from resources.game import Game, GameList
+from src import socket_routes
+from src.resources.home import Home
 
-PRODUCT_TYPES = [
-    'shirt',
-    'hoodie',
-    'tank'
-]
+# Routes
+api.add_resource(Home, '/')
+# api.add_resource(Game, '/games/<int:pid>')
 
-PERSON = [
-    'male',
-    'female'
-]
+# @app.before_first_request
+# def create_db():
+#     db.create_all()
 
-PRICE = [
-    22.99,
-    26.99,
-    29.99
-]
-
-def create_product():
-    data = {
-        'title': TITLES[random.randrange(0, len(TITLES))],
-        'description': DESCRIPTIONS[random.randrange(0, len(DESCRIPTIONS))],
-        'product_type': PRODUCT_TYPES[random.randrange(0, len(PRODUCT_TYPES))],
-        'person': PERSON[random.randrange(0, len(PERSON))],
-        'price': PRICE[random.randrange(0, len(PRICE))],
-        'colors': [
-            ProductColorsModel(color='black'),
-            ProductColorsModel(color='red'),
-            ProductColorsModel(color='green')
-        ]
-    }
-    ProductModel(**data).save_to_db()
+if __name__ == '__main__':
+    from db import db
+    db.init_app(app)
+    socketio.init_app(app)
+    socketio.run(app)
+    # app.run()

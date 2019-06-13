@@ -12,16 +12,15 @@ const styles = {
     spacing: {
         marginLeft: '5rem'
     }
-
 };
 
 const Board = (props) => {
-    const { classes, discardPile, drawPile } = props;
+    const { classes, discardPile, drawPile, handleClickDrawPile, handleClickDiscardPile } = props;
 
     return (
         <Grid container alignItems="center" className={classes.root}>
-            <DiscardPiles piles={discardPile} />
-            <DrawPile className={classes.spacing} drawPile={drawPile} />
+            <DiscardPiles piles={discardPile} handleClick={handleClickDiscardPile} />
+            <DrawPile className={classes.spacing} drawPile={drawPile} handleClick={handleClickDrawPile} />
         </Grid>
     );
 }

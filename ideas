@@ -1,0 +1,9 @@
+start with no users in users array
+have js object for users
+- key is user id
+current player
+- id of user
+me
+- your user id
+
+when changing your hand, use id from my and change update users

@@ -55,7 +55,7 @@ const styles = {
 };
 
 const DiscardPile = props => {
-  const { classes, cards, color } = props;
+  const { classes, cards, color, handleClick } = props;
   const discardClasses = classNames(classes.discard, color);
   const overlayClasses = classNames(classes.overlay, color);
   const card = cards.length > 0 ? cards[cards.length - 1] : null;
@@ -64,7 +64,7 @@ const DiscardPile = props => {
     <div className={discardClasses}>
       <div className={overlayClasses}>
         {card ? (
-          <CardCount cards={cards}>
+          <CardCount cards={cards} handleClick={(e) => handleClick(e, color)}>
             {() => (<Card type={color} value={card} />)}
           </CardCount>
         ) : null}

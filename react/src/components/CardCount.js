@@ -34,11 +34,11 @@ const styles = {
 };
 
 const CardCount = props => {
-  const { cards, children, classes, className: classNameProp } = props;
+  const { cards, children, classes, className: classNameProp, handleClick } = props;
   const className = classNames(classes.root, classNameProp);
 
   return (
-    <div className={className}>
+    <div className={className} onClick={handleClick}>
       <Count count={cards.length} />
       {children()}
     </div>

@@ -1,5 +1,4 @@
-from src import db
-
+from app import db
 
 class ProductColorsModel(db.Model):
     """
