@@ -1,6 +1,9 @@
+import json
+from flask import request
+from flask_jwt_extended import verify_jwt_in_request
 from src.app import socketio
-from src.util.cards import Cards
-from src.util.cards import Card
+from src.models.game import Game
+from src.util.cards import Card, Hand, Deck
 from flask_socketio import emit, join_room, leave_room, \
     close_room, rooms, disconnect
 
@@ -77,32 +80,45 @@ def join_game(data):
 
 @socketio.on('new_game', namespace='/game')
 def new_game(data):
-    global players, currentPlayer, drawPile, discardPile
-    clear_game()
-    cards = Cards()
-    cards.shuffle()
-    cards.deal()
-    serialized_data = cards.serialize()
+    # global players, currentPlayer, drawPile, discardPile
+    verify_jwt_in_request()
+    print(data)
+    game = Game()
+    game.player_one_id = 3
+    # game.player_two_id = 4
+    game.current_player_id = 3
+    game.player_one_hand = [{'t': 'green', 'v': '2'}, {'t': 'red', 'v': '2'}]
+    game.player_two_hand = [{'t': 'green', 'v': '2'}, {'t': 'red', 'v': '2'}]
+    game.draw_pile = []
+    game.discard_pile = []
+    game.player_one_score = 2
+    game.player_two_score = 3
+    game.save_to_db()
+    # clear_game()
+    # cards = Cards()
+    # cards.shuffle()
+    # cards.deal()
+    # serialized_data = cards.serialize()
 
-    players[0]['hand'] = serialized_data['hand1']
-    players[1]['hand'] = serialized_data['hand2']
-    players[0]['name'] = data['me']
-    players[1]['name'] = data['opponent']
-    drawPile = serialized_data['deck']
+    # players[0]['hand'] = serialized_data['hand1']
+    # players[1]['hand'] = serialized_data['hand2']
+    # players[0]['name'] = data['me']
+    # players[1]['name'] = data['opponent']
+    # drawPile = serialized_data['deck']
 
-    currentPlayer = players[0]['id'] if data['firstPlayer'] == 'me' else players[1]['id']
+    # currentPlayer = players[0]['id'] if data['firstPlayer'] == 'me' else players[1]['id']
     
-    emit( 'game_data',
-        {
-            'players': {
-                players[0]['id']: players[0],
-                players[1]['id']: players[1]
-            },
-            'drawPile': drawPile,
-            'discardPile': discardPile,
-            'currentPlayer': currentPlayer
-        }
-    )
+    # emit( 'game_data',
+    #     {
+    #         'players': {
+    #             players[0]['id']: players[0],
+    #             players[1]['id']: players[1]
+    #         },
+    #         'drawPile': drawPile,
+    #         'discardPile': discardPile,
+    #         'currentPlayer': currentPlayer
+    #     }
+    # )
 
 @socketio.on('play_card', namespace='/game')
 def play_card(data):
