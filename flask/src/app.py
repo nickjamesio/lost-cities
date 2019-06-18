@@ -26,7 +26,7 @@ from src import socket_routes
 from src.resources.home import Home
 from src.resources.user import UserRegister, User, UserList, UserLogin, TokenRefresh
 
-from src.models import game
+from src.models import game, user
 
 jwt = JWTManager(app)
 # @jwt.user_claims_loader
@@ -34,6 +34,13 @@ jwt = JWTManager(app)
 #     if identity == 1: # should read from database
 #         return {'is_admin': True}
 #     return {'is_admin': False}
+
+@jwt.user_loader_callback_loader
+def user_loader_callback(identity):
+    """
+    Return current user or None if not found
+    """
+    return user.UserModel.find_by_id(identity)
 
 @jwt.expired_token_loader
 def expired_token_callback():

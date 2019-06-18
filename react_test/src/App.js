@@ -18,18 +18,6 @@ function register(event) {
   event.preventDefault();
 }
 function login(event) {
-  // axios.defaults.withCredentials = true;
-  // axios.post('http://localhost:5000/login', {
-  //   withCredentials: true,
-  //   username: document.forms.login.username2.value,
-  //   password: document.forms.login.password2.value
-  // })
-  // .then(function (response) {
-  //   console.log(response);
-  // })
-  // .catch(function (error) {
-  //   console.log(error);
-  // });
   fetch('http://localhost:5000/login', {
     method: 'post',
     headers: {
@@ -48,12 +36,20 @@ function login(event) {
   event.preventDefault();
 }
 
-function testSocket() {
-  const socket = io.connect('http://localhost:5000/game');
-  socket.emit('new_game', {blah: 1})
+function new_game(event, socket) {
+  const position = document.forms.new_game.player_position.value;
+  socket.emit('new_game', {position});
+  event.preventDefault();
+}
+
+function log(data) {
+  console.log(data)
 }
 
 function App() {
+  const socket = io.connect('http://localhost:5000/game');
+  socket.on('game_data', log);
+
   return (
     <div className="App">
       <header className="App-header">
@@ -87,7 +83,12 @@ function App() {
           <input type="password" name="password2" id="password2" />
           <input type="submit" />
         </form>
-        <button onClick={testSocket}>Socket</button>
+        <form id="new_game" onSubmit={e => new_game(e, socket)}>
+          <h5>New game</h5>
+          <input type="radio" name="player_position" value="first" defaultChecked/> First
+          <input type="radio" name="player_position" value="second" /> Second
+          <input type="submit" />
+        </form>
     </div>
   );
 }

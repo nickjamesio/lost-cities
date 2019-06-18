@@ -1,6 +1,9 @@
 import json
+import functools
 from flask import request
-from flask_jwt_extended import verify_jwt_in_request
+from flask_jwt_extended import verify_jwt_in_request, current_user
+from jwt import ExpiredSignatureError
+from flask_jwt_extended.exceptions import NoAuthorizationError
 from src.app import socketio
 from src.models.game import Game
 from src.util.cards import Card, Hand, Deck
@@ -48,13 +51,30 @@ discardPile = {
     'yellow': []
 }
 
+def authenticated_only(f):
+    @functools.wraps(f)
+    def wrapper(*args, **kwargs):
+        try:
+            verify_jwt_in_request()
+        except NoAuthorizationError as e:
+            emit( 'game_data', {'message': str(e)})
+            disconnect()
+        except ExpiredSignatureError as e:
+            emit( 'game_data', {'message': str(e)})
+            disconnect()
+        else:
+            return f(*args, **kwargs)
+    return wrapper
+
 @socketio.on('test', namespace='/game')
 def test(data):
     print(data)
 
 @socketio.on('join_game', namespace='/game')
 def join_game(data):
-    # Need name
+    # Need game id
+    # need player id
+    # need player position
     global players, currentPlayer, drawPile, discardPile
     player = {}
     opponent = {}
@@ -79,46 +99,39 @@ def join_game(data):
     )
 
 @socketio.on('new_game', namespace='/game')
+@authenticated_only
 def new_game(data):
-    # global players, currentPlayer, drawPile, discardPile
-    verify_jwt_in_request()
-    print(data)
+    deck = Deck()
+    hand1, hand2 = deck.deal()
+
     game = Game()
-    game.player_one_id = 3
-    # game.player_two_id = 4
-    game.current_player_id = 3
-    game.player_one_hand = [{'t': 'green', 'v': '2'}, {'t': 'red', 'v': '2'}]
-    game.player_two_hand = [{'t': 'green', 'v': '2'}, {'t': 'red', 'v': '2'}]
-    game.draw_pile = []
+    game.player_one_hand = hand1.serialize()
+    game.player_two_hand = hand2.serialize()
+    game.draw_pile = deck.serialize()
     game.discard_pile = []
-    game.player_one_score = 2
-    game.player_two_score = 3
+    game.player_one_score = 0
+    game.player_two_score = 0
+
+    if data['position'] == 'first':
+        game.player_one_id = current_user.id
+        game.current_player_id = current_user.id
+    else:
+        game.player_two_id = current_user.id
+
     game.save_to_db()
-    # clear_game()
-    # cards = Cards()
-    # cards.shuffle()
-    # cards.deal()
-    # serialized_data = cards.serialize()
-
-    # players[0]['hand'] = serialized_data['hand1']
-    # players[1]['hand'] = serialized_data['hand2']
-    # players[0]['name'] = data['me']
-    # players[1]['name'] = data['opponent']
-    # drawPile = serialized_data['deck']
-
-    # currentPlayer = players[0]['id'] if data['firstPlayer'] == 'me' else players[1]['id']
     
-    # emit( 'game_data',
-    #     {
-    #         'players': {
-    #             players[0]['id']: players[0],
-    #             players[1]['id']: players[1]
-    #         },
-    #         'drawPile': drawPile,
-    #         'discardPile': discardPile,
-    #         'currentPlayer': currentPlayer
-    #     }
-    # )
+    emit( 'game_data',
+        {
+            'game_id': game.id,
+            'players': {
+                'player_one': game.player_one_id,
+                'player_two': game.player_two_id
+            },
+            'drawPile': game.draw_pile,
+            'discardPile': game.discard_pile,
+            'currentPlayer': game.current_player_id
+        }
+    )
 
 @socketio.on('play_card', namespace='/game')
 def play_card(data):
@@ -173,7 +186,7 @@ def draw_card(data):
         broadcast=True
     )
 
-@socketio.on('discard_draw', namespace='/game')
+@socketio.on('draw_discard', namespace='/game')
 def draw_from_discard_pile(data):
     global discardPile
     player = get_user(data['pid'])

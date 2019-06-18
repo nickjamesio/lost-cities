@@ -1,6 +1,6 @@
 import random
 
-class Card:
+class Card(object):
     def __init__(self, cType, value):
         self.type = cType
         self.value = value
@@ -62,19 +62,28 @@ class Deck(CardStack):
     CARD_COLORS = ['red', 'green', 'white', 'blue', 'yellow']
 
     def __init__(self, cards=None):
-        super(cards)
+        super(Deck, self).__init__(cards)
         if not cards:
             self.stack = [Card(color, value) for color in self.CARD_COLORS for value in self.CARD_VALUES]
 
-    def deal(self):
-        hand1 = self.stack[0:16:2]
-        hand2 = self.stack[1:16:2]
-        self.deck = self.stack[16:]
+    @property
+    def draw_pile(self):
+        return self.stack
 
-        return {
-            'player_one_hand': hand1,
-            'player_two_hand': hand2
-        }
+    def deal(self):
+        self.shuffle()
+        tmp_hand1 = self.stack[0:16:2]
+        tmp_hand2 = self.stack[1:16:2]
+        self.stack = self.stack[16:]
+
+        hand1 = Hand()
+        hand2 = Hand()
+        for card in tmp_hand1:
+            hand1.add_card(card)
+        for card in tmp_hand2:
+            hand2.add_card(card)
+
+        return  hand1, hand2
 
 if __name__ == '__main__':
     pass
