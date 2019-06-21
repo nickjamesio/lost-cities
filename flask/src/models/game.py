@@ -1,9 +1,9 @@
-from src.app import db
-from src.models.types.json_field import JSONEncoded
+from db import db
+from models.types.json_field import JSONEncoded
 
 class Game(db.Model):
     """
-    New game
+    Game model
     """
     __tablename__ = 'game'
 
@@ -27,7 +27,3 @@ class Game(db.Model):
     @classmethod
     def find_by_id(cls, gid):
         return cls.query.filter_by(id=gid).first()
-# draw pile
-# discard piles
-# player one score
-# player two score

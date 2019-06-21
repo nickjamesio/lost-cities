@@ -14,8 +14,14 @@ from flask_jwt_extended.exceptions import NoAuthorizationError
 from app import socketio
 from models.game import Game
 from util.cards import Card, Hand, Deck
-from flask_socketio import emit, join_room, leave_room, \
-    close_room, rooms, disconnect
+from flask_socketio import (
+    emit,
+    join_room,
+    leave_room,
+    close_room,
+    rooms,
+    disconnect
+)
 
 players = [
     {
@@ -88,7 +94,6 @@ def refresh_token(data):
     return resp, 200
 
 @socketio.on('join_game', namespace='/game')
-@authenticated_only
 def join_game(data):
     # Need game id
     # need player position

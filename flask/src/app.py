@@ -19,19 +19,17 @@ app = Flask(__name__)
 app.config.from_object(Config)
 api = Api(app)
 socketio = SocketIO(app)
+jwt = JWTManager(app)
 
 # Enable CORS
 # if app.env == 'production':
 #     CORS(app, origins=["https://DOMAIN.com", "https://www.DOMAIN.com"])
 # else:
-CORS(app, origins=["http://api.localhost", "http://nickjames.local"], supports_credentials=True)
+CORS(app, origins=["http://api.localhost", "http://nickjames.local:3000"], supports_credentials=True)
 
-from src import socket_routes
-# from src.routes import *
+import socket_routes
+from models import user
 
-from models import game, user
-
-jwt = JWTManager(app)
 @jwt.user_claims_loader
 def add_claims_to_jwt(identity):
     if identity == 1: # should read from database
@@ -103,6 +101,6 @@ def create_tables():
 if __name__ == '__main__':
     from db import db
     db.init_app(app)
-    # socketio.init_app(app)
-    # socketio.run(app)
-    app.run()
+    socketio.init_app(app)
+    socketio.run(app)
+    # app.run()

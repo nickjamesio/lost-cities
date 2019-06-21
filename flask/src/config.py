@@ -4,7 +4,7 @@ basedir = os.path.abspath(os.path.dirname(__file__))
 
 
 class Config:
-    SECRET_KEY = os.environ.get('SECRET_KEY') or 'my butthole'
+    SECRET_KEY = os.environ.get('SECRET_KEY') or 'spongebob'
     SQLALCHEMY_DATABASE_URI = os.environ.get('DATABASE_URL') or 'sqlite:///' + os.path.join(basedir, 'data.db')
     # postgresql 'postgresql://chess@localhost/chess'
     SQLALCHEMY_ECHO = True
@@ -13,8 +13,8 @@ class Config:
     SESSION_TYPE = 'sqlalchemy'
     # JWT_COOKIE_DOMAIN = 'nickjames.local'
     JWT_TOKEN_LOCATION = 'cookies'
-    # JWT_ACCESS_COOKIE_PATH = '/'
-    # JWT_REFRESH_COOKIE_PATH = '/'
+    JWT_ACCESS_COOKIE_PATH = '/'
+    JWT_REFRESH_COOKIE_PATH = '/'
 
     # TODO change this in future
     # https://flask-jwt-extended.readthedocs.io/en/latest/tokens_in_cookies.html
