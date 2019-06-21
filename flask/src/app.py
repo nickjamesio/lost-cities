@@ -12,7 +12,7 @@ app = Flask(__name__)
 app.config.from_object(Config)
 db = SQLAlchemy(app)
 api = Api(app)
-socketio = SocketIO(app)
+# socketio = SocketIO(app)
 
 # Enable CORS
 # if app.env == 'production':
@@ -21,7 +21,7 @@ socketio = SocketIO(app)
 CORS(app, origins=["http://api.localhost", "http://nickjames.local"], supports_credentials=True)
 
 # from resources.game import Game, GameList
-from src import socket_routes
+# from src import socket_routes
 # from src.routes import *
 from src.resources.home import Home
 from src.resources.user import UserRegister, User, UserList, UserLogin, TokenRefresh
@@ -100,6 +100,6 @@ def create_tables():
 
 if __name__ == '__main__':
     db.init_app(app)
-    socketio.init_app(app)
-    socketio.run(app)
+    # socketio.init_app(app)
+    # socketio.run(app)
     # app.run()

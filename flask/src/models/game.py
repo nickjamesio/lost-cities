@@ -13,6 +13,8 @@ class Game(db.Model):
     current_player_id = db.Column(db.Integer)
     player_one_hand = db.Column(JSONEncoded(200))
     player_two_hand = db.Column(JSONEncoded(200))
+    player_one_played = db.Column(JSONEncoded(200))
+    player_two_played = db.Column(JSONEncoded(200))
     draw_pile = db.Column(JSONEncoded(800))
     discard_pile = db.Column(JSONEncoded(800))
     player_one_score = db.Column(db.Integer)

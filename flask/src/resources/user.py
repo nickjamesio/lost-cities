@@ -86,4 +86,7 @@ class TokenRefresh(Resource):
     def post(self):
         current_user = get_jwt_identity()
         new_token = create_access_token(identity=current_user, fresh=False)
-        return {'access_token': new_token}, 200
+        resp = jsonify({'refreshed': True})
+        set_access_cookies(resp, new_token)
+        
+        return resp, 200

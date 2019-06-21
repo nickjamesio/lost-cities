@@ -42,13 +42,51 @@ function new_game(event, socket) {
   event.preventDefault();
 }
 
+function join_game(event, socket) {
+  const position = document.forms.join_game.player_position.value;
+  const game_id = document.forms.join_game.game_id.value
+  socket.emit('join_game', {position, game_id},
+    data => {
+      console.log('callback after emit')
+    }
+  );
+  event.preventDefault();
+}
+
+function play_card(event, socket) {
+  const index = document.forms.play_card.card_index.value;
+  const game_id = document.forms.play_card.game_id.value
+  socket.emit(
+    'play_card',
+    {card_index: index, game_id},
+    (data) => {
+      console.log('callback after emit')
+    });
+  event.preventDefault();
+}
+
+function refreshToken(data) {
+  const x = 1;
+  // fetch('http://localhost:5000/refresh', {
+  //   method: 'post',
+  //   headers: {
+  //     "Content-type": "application/json"
+  //   },
+  //   credentials: 'include',
+  // })
+  
+}
+
 function log(data) {
   console.log(data)
 }
 
 function App() {
   const socket = io.connect('http://localhost:5000/game');
-  socket.on('game_data', log);
+  socket.on('game_created', log);
+  socket.on('join_game', log);
+  socket.on('card_played', log);
+  socket.on('expired token', refreshToken);
 
   return (
     <div className="App">
@@ -87,6 +125,22 @@ function App() {
           <h5>New game</h5>
           <input type="radio" name="player_position" value="first" defaultChecked/> First
           <input type="radio" name="player_position" value="second" /> Second
+          <input type="submit" />
+        </form>
+
+        <form id="join_game" onSubmit={e => join_game(e, socket)}>
+          <h5>Join game</h5>
+          <label>Game id</label>
+          <input type="text" name="game_id" />
+          <input type="radio" name="player_position" value="first" defaultChecked/> First
+          <input type="radio" name="player_position" value="second" /> Second
+          <input type="submit" />
+        </form>
+
+        <form id="play_card" onSubmit={e => play_card(e, socket)}>
+          <h5>Play card</h5>
+          <label>Index</label>
+          <input type="text" name="card_index" />
           <input type="submit" />
         </form>
     </div>

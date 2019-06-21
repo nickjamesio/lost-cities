@@ -27,6 +27,9 @@ class CardStack:
         """
         return self.stack.pop()
 
+    def append(self, card):
+        self.stack.append(Card(card['typ'], card['val']))
+
     def serialize(self):
         return [card.serialize() for card in self.stack]
 
@@ -38,9 +41,6 @@ class CardStack:
         return return_val
 
 class Hand(CardStack):
-    # def __init__(self, cards):
-    #     super(self, cards)
-
     def get_card(self, index):
         card = None
         if len(self.stack) >= index:
@@ -49,10 +49,8 @@ class Hand(CardStack):
         return card
 
     def add_card(self, card):
-        self.stack.append(card)
-    
-    def _sort(self):
-        pass
+        self.append(card)
+        self.stack = sorted(self.stack, key=lambda card: card['typ'] + str(card['val']) )
 
 class Deck(CardStack):
     CARD_VALUES = [
