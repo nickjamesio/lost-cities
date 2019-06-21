@@ -1,6 +1,6 @@
 from flask import jsonify
 from flask_restful import Resource, reqparse
-from src.models.user import UserModel
+from models.user import UserModel
 from flask_jwt_extended import (
     create_access_token,
     create_refresh_token,
@@ -62,6 +62,7 @@ class UserList(Resource):
 
 
 class UserLogin(Resource):
+    @classmethod
     def post(self):
         data = _user_parser.parse_args()
 

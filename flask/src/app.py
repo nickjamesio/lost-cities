@@ -1,18 +1,24 @@
 from flask_restful.representations import json
 from flask import Flask, jsonify, Response
-from flask_sqlalchemy import SQLAlchemy
 from flask_restful import Api
 from flask_cors import CORS
 from flask_socketio import SocketIO
 from flask_jwt_extended import JWTManager
 
-from src.config import Config
+from config import Config
+from resources.home import Home
+from resources.user import (
+    UserRegister,
+    User,
+    UserList,
+    UserLogin,
+    TokenRefresh
+)
 
 app = Flask(__name__)
 app.config.from_object(Config)
-db = SQLAlchemy(app)
 api = Api(app)
-# socketio = SocketIO(app)
+socketio = SocketIO(app)
 
 # Enable CORS
 # if app.env == 'production':
@@ -20,20 +26,17 @@ api = Api(app)
 # else:
 CORS(app, origins=["http://api.localhost", "http://nickjames.local"], supports_credentials=True)
 
-# from resources.game import Game, GameList
-# from src import socket_routes
+from src import socket_routes
 # from src.routes import *
-from src.resources.home import Home
-from src.resources.user import UserRegister, User, UserList, UserLogin, TokenRefresh
 
-from src.models import game, user
+from models import game, user
 
 jwt = JWTManager(app)
-# @jwt.user_claims_loader
-# def add_claims_to_jwt(identity):
-#     if identity == 1: # should read from database
-#         return {'is_admin': True}
-#     return {'is_admin': False}
+@jwt.user_claims_loader
+def add_claims_to_jwt(identity):
+    if identity == 1: # should read from database
+        return {'is_admin': True}
+    return {'is_admin': False}
 
 @jwt.user_loader_callback_loader
 def user_loader_callback(identity):
@@ -92,14 +95,14 @@ api.add_resource(User, '/user/<int:uid>')
 api.add_resource(UserList, '/users')
 api.add_resource(UserLogin, '/login')
 api.add_resource(TokenRefresh, '/refresh')
-# api.add_resource(Game, '/games/<int:pid>')
 
 @app.before_first_request
 def create_tables():
     db.create_all()
 
 if __name__ == '__main__':
+    from db import db
     db.init_app(app)
     # socketio.init_app(app)
     # socketio.run(app)
-    # app.run()
+    app.run()

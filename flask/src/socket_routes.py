@@ -1,7 +1,7 @@
 import json
 import functools
 from flask import request, jsonify
-from src.flask_jwt_extended import (
+from flask_jwt_extended import (
     verify_jwt_in_request,
     current_user,
     jwt_refresh_token_required,
@@ -10,10 +10,10 @@ from src.flask_jwt_extended import (
     set_access_cookies
 )
 from jwt import ExpiredSignatureError
-from src.flask_jwt_extended.exceptions import NoAuthorizationError
-from src.app import socketio
-from src.models.game import Game
-from src.util.cards import Card, Hand, Deck
+from flask_jwt_extended.exceptions import NoAuthorizationError
+from app import socketio
+from models.game import Game
+from util.cards import Card, Hand, Deck
 from flask_socketio import emit, join_room, leave_room, \
     close_room, rooms, disconnect
 

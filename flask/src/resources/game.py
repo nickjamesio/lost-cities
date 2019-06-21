@@ -1,7 +1,7 @@
 from flask_restful import Resource, request, reqparse
-from src.models.product import ProductModel
-from src.models.product_colors import ProductColorsModel
-from src.util.cards import Cards
+from models.product import ProductModel
+from models.product_colors import ProductColorsModel
+from util.cards import Cards
 
 class Game(Resource):
     def get(self, pid):

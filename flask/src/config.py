@@ -9,6 +9,7 @@ class Config:
     # postgresql 'postgresql://chess@localhost/chess'
     SQLALCHEMY_ECHO = True
     SQLALCHEMY_TRACK_MODIFICATIONS = False
+    PROPAGATE_EXCEPTIONS = True
     SESSION_TYPE = 'sqlalchemy'
     # JWT_COOKIE_DOMAIN = 'nickjames.local'
     JWT_TOKEN_LOCATION = 'cookies'
