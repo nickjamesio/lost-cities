@@ -7,7 +7,8 @@ from flask_jwt_extended import (
     jwt_refresh_token_required,
     get_jwt_identity,
     create_access_token,
-    set_access_cookies
+    set_access_cookies,
+    jwt_required
 )
 from jwt import ExpiredSignatureError
 from flask_jwt_extended.exceptions import NoAuthorizationError
@@ -71,32 +72,37 @@ def authenticated_only(f):
             verify_jwt_in_request()
         except NoAuthorizationError as e:
             emit( 'not authorized', {'message': str(e)})
+            print('no auth')
             disconnect()
-        except ExpiredSignatureError as e:
-            emit( 'expired token', {'message': str(e)})
-            # disconnect()
         else:
             return f(*args, **kwargs)
     return wrapper
 
+@socketio.on_error_default
+def default_error_handler(e):
+    # need to establish error handlers for JWt errors that
+    # occur when making web socket request. See all exceptions
+    # that can be raised in flask_jwt_extended.jwt_manager
+    raise e
+
 @socketio.on('test', namespace='/game')
+@jwt_required
 def test(data):
     print(data)
 
-@socketio.on('refresh', namespace='/game')
-@jwt_refresh_token_required
-def refresh_token(data):
-    current_user = get_jwt_identity()
-    new_token = create_access_token(identity=current_user, fresh=False)
-    resp = jsonify({'refreshed': True})
-    set_access_cookies(resp, new_token)
+# @socketio.on('refresh', namespace='/game')
+# @jwt_refresh_token_required
+# def refresh_token(data):
+#     current_user = get_jwt_identity()
+#     new_token = create_access_token(identity=current_user, fresh=False)
+#     resp = jsonify({'refreshed': True})
+#     set_access_cookies(resp, new_token)
     
-    return resp, 200
+#     return resp, 200
 
 @socketio.on('join_game', namespace='/game')
+@authenticated_only
 def join_game(data):
-    # Need game id
-    # need player position
     #TODO confirm there is id in data
     game = Game.find_by_id(data['game_id'])
     if data['position'] == 'first':

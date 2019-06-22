@@ -77,6 +77,10 @@ function refreshToken(data) {
   
 }
 
+function test(event, socket) {
+  socket.emit('test', {blah:'blah'})
+}
+
 function log(data) {
   console.log(data)
 }
@@ -143,6 +147,8 @@ function App() {
           <input type="text" name="card_index" />
           <input type="submit" />
         </form>
+
+        <button onClick={e => test(e, socket)}>Test</button>
     </div>
   );
 }

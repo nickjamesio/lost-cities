@@ -5,6 +5,7 @@ from flask_cors import CORS
 from flask_socketio import SocketIO
 from flask_jwt_extended import JWTManager
 
+from db import db
 from config import Config
 from resources.home import Home
 from resources.user import (
@@ -19,13 +20,14 @@ app = Flask(__name__)
 app.config.from_object(Config)
 api = Api(app)
 socketio = SocketIO(app)
+db.init_app(app)
 jwt = JWTManager(app)
 
 # Enable CORS
 # if app.env == 'production':
 #     CORS(app, origins=["https://DOMAIN.com", "https://www.DOMAIN.com"])
 # else:
-CORS(app, origins=["http://api.localhost", "http://nickjames.local:3000"], supports_credentials=True)
+CORS(app, origins=["http://api.localhost", "http://nickjames.local"], supports_credentials=True)
 
 import socket_routes
 from models import user
@@ -99,8 +101,9 @@ def create_tables():
     db.create_all()
 
 if __name__ == '__main__':
-    from db import db
-    db.init_app(app)
-    socketio.init_app(app)
+    pass
+    # from db import db
+    # db.init_app(app)
+    # socketio.init_app(app)
     socketio.run(app)
     # app.run()

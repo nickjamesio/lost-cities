@@ -7,7 +7,7 @@ class Config:
     SECRET_KEY = os.environ.get('SECRET_KEY') or 'spongebob'
     SQLALCHEMY_DATABASE_URI = os.environ.get('DATABASE_URL') or 'sqlite:///' + os.path.join(basedir, 'data.db')
     # postgresql 'postgresql://chess@localhost/chess'
-    SQLALCHEMY_ECHO = True
+    # SQLALCHEMY_ECHO = True
     SQLALCHEMY_TRACK_MODIFICATIONS = False
     PROPAGATE_EXCEPTIONS = True
     SESSION_TYPE = 'sqlalchemy'
@@ -19,5 +19,5 @@ class Config:
     # TODO change this in future
     # https://flask-jwt-extended.readthedocs.io/en/latest/tokens_in_cookies.html
     JWT_COOKIE_CSRF_PROTECT = False
-    #TODO use refresh token correct way and lower expire time
-    JWT_ACCESS_TOKEN_EXPIRES = 3 # set for 2 hours
+    #TODO make token expire after time elapses
+    JWT_ACCESS_TOKEN_EXPIRES = False
