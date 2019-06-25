@@ -1,0 +1,17 @@
+.game {
+    margin-top: 10px;
+}
+
+.container {
+    display: flex;
+}
+
+.row {
+    flex-direction: row;
+    align-items: center;
+    justify-content: center;
+}
+
+.col {
+    flex-direction: column;
+}

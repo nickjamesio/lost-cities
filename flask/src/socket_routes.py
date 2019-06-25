@@ -14,7 +14,7 @@ from jwt import ExpiredSignatureError
 from flask_jwt_extended.exceptions import NoAuthorizationError
 from app import socketio
 from models.game import Game
-from util.cards import Card, Hand, Deck
+from util.cards import Card, Hand, Deck, PlayedCards
 from flask_socketio import (
     emit,
     join_room,
@@ -72,7 +72,6 @@ def authenticated_only(f):
             verify_jwt_in_request()
         except NoAuthorizationError as e:
             emit( 'not authorized', {'message': str(e)})
-            print('no auth')
             disconnect()
         else:
             return f(*args, **kwargs)
@@ -104,19 +103,31 @@ def test(data):
 @authenticated_only
 def join_game(data):
     #TODO confirm there is id in data
-    game = Game.find_by_id(data['game_id'])
-    if data['position'] == 'first':
+
+    # check who is current player. if empty, assume game started
+    # and you are first player. if not null, only update if we are
+    # replacing the previous current player
+    game = Game.find_by_id(data['gameId'])
+    if data['position'] == 1:
+        playerHand = game.player_one_hand
+        playedCards = game.player_one_played
+        if game.current_player_id == None or game.current_player_id == game.player_one_id:
+            game.current_player_id = current_user.id
         game.player_one_id = current_user.id
-        game.current_player_id = current_user.id
     else:
-        game.player_two_id = current_user.id
+        playerHand = game.player_two_hand
+        playedCards = game.player_two_played
+        if game.current_player_id == game.player_two_id:
+            game.current_player_id = current_user.id
     game.save_to_db()
     
-    emit( 'join_game',
+    emit( 'game_joined',
         {
-            'draw_pile': game.draw_pile,
-            'discard_pile': game.discard_pile,
-            'current_player': game.current_player_id
+            'drawPile': game.draw_pile,
+            'discardPile': game.discard_pile,
+            'currentPlayer': game.current_player_id,
+            'playerHand': playerHand,
+            'playedCards': playedCards
         }
     )
 
@@ -154,24 +165,30 @@ def new_game(data):
     game.player_one_score = 0
     game.player_two_score = 0
 
-    if data['position'] == 'first':
+    if data['position'] == 1:
+        playerHand = game.player_one_hand
+        playedCards = game.player_one_played
         game.player_one_id = current_user.id
         game.current_player_id = current_user.id
     else:
+        playerHand = game.player_two_hand
+        playedCards = game.player_two_played
         game.player_two_id = current_user.id
 
     game.save_to_db()
     
     emit( 'game_created',
         {
-            'game_id': game.id,
+            'gameId': game.id,
             'players': {
-                'player_one': game.player_one_id,
-                'player_two': game.player_two_id
+                'playerOne': game.player_one_id,
+                'playerTwo': game.player_two_id
             },
+            'playerHand': playerHand,
             'drawPile': game.draw_pile,
             'discardPile': game.discard_pile,
-            'currentPlayer': game.current_player_id
+            'currentPlayer': game.current_player_id,
+            'playedCards': playedCards
         }
     )
 
@@ -180,32 +197,34 @@ def new_game(data):
 def play_card(data):
     # TODO make sure data fields are present
     # TODO remove duplicate code in each clause
-    game = Game.find_by_id(data['game_id'])
+    # TODO confirm user has making move is actually one of the players in this game
+    #   and its their turn
+    gameId = int(data['gameId'])
+
+    game = Game.find_by_id(gameId)
     if game.player_one_id == current_user.id:
-        hand = game.player_one_hand
-        hand = Hand(hand)
-        card = hand.get_card(data['card_index'])
-        
+        hand = Hand(game.player_one_hand)
+        card = hand.get_card(data['cardIndex'])
         game.player_one_hand = hand.serialize()
-        played_pile = game.player_one_played[card['typ']].append(card.serialize())
-        game.player_one_played = played_pile
-        game.current_player_id = game.player_two_id
-    else:
-        hand = game.player_two_hand
-        hand = Hand(hand)
-        card = hand.get_card(data['card_index'])
         
+        played_pile = PlayedCards(game.player_one_played)
+        played_pile.add_card(card)
+        game.player_one_played = played_pile.serialize()
+    else:
+        hand = Hand(game.player_two_hand)
+        card = hand.get_card(data['cardIndex'])
         game.player_two_hand = hand.serialize()
-        played_pile = game.player_one_played[card['typ']].append(card.serialize())
-        game.player_one_played = played_pile
-        game.current_player_id = game.player_one_id
+        
+        played_pile = PlayedCards(game.player_two_played)
+        played_pile.add_card(card)
+        game.player_two_played = played_pile.serialize()
 
     game.save_to_db()
     
     emit('card_played',
         {
-            'hand': hand.serialize(),
-            'play_pile': played_pile
+            'playerHand': hand.serialize(),
+            'playedCards': played_pile.serialize(),
         },
         broadcast=True
     )
@@ -234,16 +253,29 @@ def discard_card(data):
     )
 
 @socketio.on('draw_card', namespace='/game')
+@authenticated_only
 def draw_card(data):
-    global drawPile
-    player = get_user(data['pid'])
-    card = drawPile.pop()
-    player['hand'].append(card)
-    emit('draw_common_pile',
+    gameId = int(data['gameId'])
+    game = Game.find_by_id(gameId)
+    deck = Deck(game.draw_pile)
+
+    if current_user.id == game.player_one_id:
+        hand = Hand(game.player_one_hand)
+        hand.add_card(deck.draw())
+        game.player_one_hand = hand.serialize()
+        game.draw_pile = deck.serialize()
+    else:
+        hand = Hand(game.player_two_hand)
+        hand.add_card(deck.draw())
+        game.player_two_hand = hand.serialize()
+        game.draw_pile = deck.serialize()
+
+    game.save_to_db()
+
+    emit('card_drawn',
         {
-            'pid': data['pid'],
-            'player': player,
-            'drawPile': drawPile 
+            'playerHand': hand.serialize(),
+            'drawPile': deck.serialize() 
         },
         broadcast=True
     )

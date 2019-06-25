@@ -2,14 +2,22 @@ import random
 
 class Card(object):
     def __init__(self, cType, value):
-        self.type = cType
-        self.value = value
+        self._type = cType
+        self._value = value
+
+    @property
+    def type(self):
+        return self._type
+
+    @property
+    def value(self):
+        return self._value
 
     def serialize(self):
-        return {'typ': self.type, 'val': self.value}
+        return {'typ': self.type, 'val': self._value}
 
     def __str__(self):
-        return '<{},{}>'.format(self.type, self.value)
+        return '<{},{}>'.format(self.type, self._value)
 
 class CardStack:
     def __init__(self, cards=None):
@@ -28,7 +36,7 @@ class CardStack:
         return self.stack.pop()
 
     def append(self, card):
-        self.stack.append(Card(card['typ'], card['val']))
+        self.stack.append(card)
 
     def serialize(self):
         return [card.serialize() for card in self.stack]
@@ -42,6 +50,7 @@ class CardStack:
 
 class Hand(CardStack):
     def get_card(self, index):
+        index = int(index)
         card = None
         if len(self.stack) >= index:
             card = self.stack[index]
@@ -50,7 +59,7 @@ class Hand(CardStack):
 
     def add_card(self, card):
         self.append(card)
-        self.stack = sorted(self.stack, key=lambda card: card['typ'] + str(card['val']) )
+        self.stack = sorted(self.stack, key=lambda card: card.type + str(card.value) )
 
 class Deck(CardStack):
     CARD_VALUES = [
@@ -82,6 +91,36 @@ class Deck(CardStack):
             hand2.add_card(card)
 
         return  hand1, hand2
+
+    def draw(self):
+        return self.pop()
+
+class GroupedStack:
+    def __init__(self, cards):
+        self.card_stack = {
+            'red': CardStack(),
+            'blue': CardStack(),
+            'white': CardStack(),
+            'yellow': CardStack(),
+            'green': CardStack()
+        }
+        for color, card_stack in cards.items():
+            for card in card_stack:
+                self.card_stack[color].append(Card(card['typ'], card['val']))
+    
+    def add_card(self, card):
+        self.card_stack[card.type].append(card)
+
+    def serialize(self):
+        return {color: card_stack.serialize() for color, card_stack in self.card_stack.items()}
+
+class PlayedCards(GroupedStack):
+    def get_score(self):
+        pass
+
+class DiscardPile(GroupedStack):
+    def get_card(self, color):
+        pass
 
 if __name__ == '__main__':
     pass
