@@ -264,18 +264,21 @@ def draw_card(data):
         hand.add_card(deck.draw())
         game.player_one_hand = hand.serialize()
         game.draw_pile = deck.serialize()
+        game.current_player_id = game.player_two_id
     else:
         hand = Hand(game.player_two_hand)
         hand.add_card(deck.draw())
         game.player_two_hand = hand.serialize()
         game.draw_pile = deck.serialize()
+        game.current_player_id = game.player_one_id
 
     game.save_to_db()
 
     emit('card_drawn',
         {
             'playerHand': hand.serialize(),
-            'drawPile': deck.serialize() 
+            'drawPile': deck.serialize(),
+            'currentPlayer': game.current_player_id
         },
         broadcast=True
     )
