@@ -77,20 +77,16 @@ class Deck(CardStack):
     def draw_pile(self):
         return self.stack
 
-    def deal(self):
+    def deal_hand(self):
         self.shuffle()
-        tmp_hand1 = self.stack[0:16:2]
-        tmp_hand2 = self.stack[1:16:2]
-        self.stack = self.stack[16:]
+        tmp_hand = self.stack[0:16:2]
+        self.stack = self.stack[8:]
 
-        hand1 = Hand()
-        hand2 = Hand()
-        for card in tmp_hand1:
-            hand1.add_card(card)
-        for card in tmp_hand2:
-            hand2.add_card(card)
+        hand = Hand()
+        for card in tmp_hand:
+            hand.add_card(card)
 
-        return  hand1, hand2
+        return hand
 
     def draw(self):
         return self.pop()
@@ -115,12 +111,11 @@ class GroupedStack:
         return {color: card_stack.serialize() for color, card_stack in self.card_stack.items()}
 
 class PlayedCards(GroupedStack):
-    def get_score(self):
+    def get_score(self, color):
         pass
-
 class DiscardPile(GroupedStack):
     def get_card(self, color):
-        pass
+        return self.card_stack[color].pop()        
 
 if __name__ == '__main__':
     pass

@@ -1,14 +1,8 @@
 from flask_restful import Resource, request, reqparse
-from models.product import ProductModel
-from models.product_colors import ProductColorsModel
-from util.cards import Cards
 
 class Game(Resource):
     def get(self, pid):
-        product = ProductModel.load_by_id(pid)
-        if not product:
-            return {'message': 'Product not found'}, 404
-        return {'data': product.json()}, 200
+        pass
 
 class GameList(Resource):
     parser = reqparse.RequestParser()
@@ -81,34 +75,21 @@ class GameList(Resource):
 
     def post(self):
         data = self.parser.parse_args()
-        cards = Cards()
-        cards.shuffle()
-        cards.deal()
-        serialized_data = cards.serialize()
+        # cards = Cards()
+        # cards.shuffle()
+        # cards.deal()
+        # serialized_data = cards.serialize()
 
-        self.playerOne['hand'] = serialized_data['hand1']
-        self.playerTwo['hand'] = serialized_data['hand2']
-        self.drawPile = serialized_data['deck']
-        # self.players.append(data['player'])
-        return {
-            'playerOne': self.playerOne,
-            'playerTwo': self.playerTwo,
-            'drawPile': self.drawPile,
-            'discardPile': self.discardPile
-        }
-        # colors = []
-        # for color in data.colors:
-        #     colors.append(ProductColorsModel(color=color))
-
-        # data['colors'] = colors
-        # product = ProductModel(**data)
-
-        # try:
-        #     product.save_to_db()
-        # except:
-        #     return {"message": "An error occurred inserting the item."}, 500
-
-        # return product.json(), 201
+        # self.playerOne['hand'] = serialized_data['hand1']
+        # self.playerTwo['hand'] = serialized_data['hand2']
+        # self.drawPile = serialized_data['deck']
+        # # self.players.append(data['player'])
+        # return {
+        #     'playerOne': self.playerOne,
+        #     'playerTwo': self.playerTwo,
+        #     'drawPile': self.drawPile,
+        #     'discardPile': self.discardPile
+        # }
 
     def get(self):
         data = {

@@ -1,7 +1,8 @@
 import json
 from flask_restful import Resource, reqparse, request
-from models.game import Game
-from util.cards import Card, Deck, Hand, PlayedCards
+from models.game import GameModel
+from models.player import PlayerModel
+from util.cards import Card, Deck, Hand, PlayedCards, DiscardPile
 from flask_jwt_extended import (
     create_access_token,
     create_refresh_token,
@@ -19,28 +20,31 @@ class Home(Resource):
 
     @jwt_required
     def post(self):
+        # TODO confirm playerPosition is in data
+        # TODO if cannot find game, return error
+        # TODO do following checks
+        # check for player
+        # check for empty discard pile
         data = request.get_json()
+        gameId = int(data['gameId'])
+        color = data['color']
 
-        game = Game.find_by_id(data['gameId'])
-        if not game:
-            return {'message': 'could not load game with id ' + str(data['gameId'])}
+        game = GameModel.find_by_id(gameId)
+        player = PlayerModel.query.with_parent(game).filter(PlayerModel.position == game.current_player).first()
+        
+        discard = DiscardPile(game.discard_pile)
+        card = discard.get_card(color)
+        
+        hand = Hand(player.hand)
+        hand.add_card(card)
 
-        if game.player_one_id == current_user.id:
-            hand = Hand(game.player_one_hand)
-            card = hand.get_card(data['cardIndex'])
-            game.player_one_hand = hand.serialize()
-            
-            played_pile = PlayedCards(game.player_one_played)
-            played_pile.add_card(card)
-            game.player_one_played = played_pile.serialize()
-        else:
-            hand = Hand(game.player_two_hand)
-            card = hand.get_card(data['cardIndex'])
-            game.player_two_hand = hand.serialize()
-            
-            played_pile = PlayedCards(game.player_two_played)
-            played_pile.add_card(card)
-            game.player_two_played = played_pile.serialize()
+        game.discard_pile = discard.serialize()
+        player.hand = hand.serialize()
 
+        player.save_to_db()
         game.save_to_db()
-        return {'message': 'restricted worked'}, 200
+
+        return {
+            'hand': player.hand,
+            'discard': game.discard_pile
+        }

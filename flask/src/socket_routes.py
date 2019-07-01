@@ -1,6 +1,20 @@
 import json
 import functools
 from flask import request, jsonify
+from jwt import ExpiredSignatureError
+from flask_jwt_extended.exceptions import NoAuthorizationError
+from app import socketio
+from models.game import GameModel
+from models.player import PlayerModel
+from util.cards import Card, Hand, Deck, PlayedCards, DiscardPile
+from flask_socketio import (
+    emit,
+    join_room,
+    leave_room,
+    close_room,
+    rooms,
+    disconnect
+)
 from flask_jwt_extended import (
     verify_jwt_in_request,
     current_user,
@@ -10,60 +24,7 @@ from flask_jwt_extended import (
     set_access_cookies,
     jwt_required
 )
-from jwt import ExpiredSignatureError
-from flask_jwt_extended.exceptions import NoAuthorizationError
-from app import socketio
-from models.game import Game
-from util.cards import Card, Hand, Deck, PlayedCards
-from flask_socketio import (
-    emit,
-    join_room,
-    leave_room,
-    close_room,
-    rooms,
-    disconnect
-)
 
-players = [
-    {
-        'id': 1,
-        'name': '',
-        'hand': [],
-        'played': {
-            'red': [],
-            'green': [],
-            'blue': [],
-            'white': [],
-            'yellow': []
-        },
-        'score': 0
-    },
-    {
-        'id': 2,
-        'name': '',
-        'hand': [],
-        'played': {
-            'red': [],
-            'green': [],
-            'blue': [],
-            'white': [],
-            'yellow': []
-        },
-        'score': 0
-    }
-]
-
-currentPlayer = None
-
-drawPile = []
-
-discardPile = {
-    'red': [],
-    'green': [],
-    'blue': [],
-    'white': [],
-    'yellow': []
-}
 
 def authenticated_only(f):
     @functools.wraps(f)
@@ -71,11 +32,12 @@ def authenticated_only(f):
         try:
             verify_jwt_in_request()
         except NoAuthorizationError as e:
-            emit( 'not authorized', {'message': str(e)})
+            emit('not authorized', {'message': str(e)})
             disconnect()
         else:
             return f(*args, **kwargs)
     return wrapper
+
 
 @socketio.on_error_default
 def default_error_handler(e):
@@ -83,6 +45,7 @@ def default_error_handler(e):
     # occur when making web socket request. See all exceptions
     # that can be raised in flask_jwt_extended.jwt_manager
     raise e
+
 
 @socketio.on('test', namespace='/game')
 @jwt_required
@@ -96,254 +59,194 @@ def test(data):
 #     new_token = create_access_token(identity=current_user, fresh=False)
 #     resp = jsonify({'refreshed': True})
 #     set_access_cookies(resp, new_token)
-    
+
 #     return resp, 200
+
 
 @socketio.on('join_game', namespace='/game')
 @authenticated_only
 def join_game(data):
-    #TODO confirm there is id in data
+    # TODO confirm there is id in data
 
-    # check who is current player. if empty, assume game started
-    # and you are first player. if not null, only update if we are
-    # replacing the previous current player
-    game = Game.find_by_id(data['gameId'])
-    if data['position'] == 1:
-        playerHand = game.player_one_hand
-        playedCards = game.player_one_played
-        if game.current_player_id == None or game.current_player_id == game.player_one_id:
-            game.current_player_id = current_user.id
-        game.player_one_id = current_user.id
-    else:
-        playerHand = game.player_two_hand
-        playedCards = game.player_two_played
-        if game.current_player_id == game.player_two_id:
-            game.current_player_id = current_user.id
-    game.save_to_db()
+    position = data['playerPosition']
+    game = GameModel.find_by_id(data['gameId'])
+    player = PlayerModel.query.with_parent(game).filter(PlayerModel.position == position).first()
     
-    emit( 'game_joined',
-        {
-            'drawPile': game.draw_pile,
-            'discardPile': game.discard_pile,
-            'currentPlayer': game.current_player_id,
-            'playerHand': playerHand,
-            'playedCards': playedCards
-        }
+    # Check if there is a player at that position already. If not
+    # add the user. If so, replace them.
+    if not player:
+        deck = Deck(game.draw_pile)
+        player = PlayerModel()
+        player.hand = deck.deal_hand().serialize()
+        player.position = position
+        player.user = current_user
+        player.game = game
+        player.save_to_db()
+    elif player.user_id != current_user.id:
+        player.user = current_user
+        player.save_to_db()
+
+    emit('game_joined',
+         {
+             'deck': game.draw_pile,
+             'discard': game.discard_pile,
+             'currentPlayer': game.current_player,
+             'hand': player.hand,
+             'played': player.played
+         }
     )
+
 
 @socketio.on('new_game', namespace='/game')
 @authenticated_only
 def new_game(data):
+    # TODO confirm playerPosition is in data
     deck = Deck()
-    hand1, hand2 = deck.deal()
+    hand = deck.deal_hand()
 
-    game = Game()
-    game.player_one_played = {
-        'red': [],
-        'green': [],
-        'blue': [],
-        'white': [],
-        'yellow': []
-    }
-    game.player_two_played = {
-        'red': [],
-        'green': [],
-        'blue': [],
-        'white': [],
-        'yellow': []
-    }
-    game.discard_pile = {
-        'red': [],
-        'green': [],
-        'blue': [],
-        'white': [],
-        'yellow': []
-    }
-    game.player_one_hand = hand1.serialize()
-    game.player_two_hand = hand2.serialize()
+    player = PlayerModel()
+    player.hand = hand.serialize()
+    player.user = current_user
+    player.position = int(data['playerPosition'])
+
+    game = GameModel()
     game.draw_pile = deck.serialize()
-    game.player_one_score = 0
-    game.player_two_score = 0
-
-    if data['position'] == 1:
-        playerHand = game.player_one_hand
-        playedCards = game.player_one_played
-        game.player_one_id = current_user.id
-        game.current_player_id = current_user.id
-    else:
-        playerHand = game.player_two_hand
-        playedCards = game.player_two_played
-        game.player_two_id = current_user.id
-
+    game.players.append(player)
     game.save_to_db()
-    
-    emit( 'game_created',
-        {
-            'gameId': game.id,
-            'players': {
-                'playerOne': game.player_one_id,
-                'playerTwo': game.player_two_id
-            },
-            'playerHand': playerHand,
-            'drawPile': game.draw_pile,
-            'discardPile': game.discard_pile,
-            'currentPlayer': game.current_player_id,
-            'playedCards': playedCards
-        }
+
+    emit('game_created',
+         {
+             'gameId': game.id,
+             'position': player.position,
+             'hand': player.hand,
+             'deck': game.draw_pile,
+             'discard': game.discard_pile,
+             'currentPlayer': game.current_player,
+             'played': player.played
+         }
     )
+
 
 @socketio.on('play_card', namespace='/game')
 @authenticated_only
 def play_card(data):
     # TODO make sure data fields are present
-    # TODO remove duplicate code in each clause
-    # TODO confirm user has making move is actually one of the players in this game
-    #   and its their turn
+    index = int(data['cardIndex'])
     gameId = int(data['gameId'])
 
-    game = Game.find_by_id(gameId)
-    if game.player_one_id == current_user.id:
-        hand = Hand(game.player_one_hand)
-        card = hand.get_card(data['cardIndex'])
-        game.player_one_hand = hand.serialize()
-        
-        played_pile = PlayedCards(game.player_one_played)
-        played_pile.add_card(card)
-        game.player_one_played = played_pile.serialize()
-    else:
-        hand = Hand(game.player_two_hand)
-        card = hand.get_card(data['cardIndex'])
-        game.player_two_hand = hand.serialize()
-        
-        played_pile = PlayedCards(game.player_two_played)
-        played_pile.add_card(card)
-        game.player_two_played = played_pile.serialize()
-
-    game.save_to_db()
+    game = GameModel.find_by_id(gameId)
+    player = PlayerModel.query.with_parent(game).filter(PlayerModel.position == game.current_player).first()
     
-    emit('card_played',
-        {
-            'playerHand': hand.serialize(),
-            'playedCards': played_pile.serialize(),
-        },
-        broadcast=True
-    )
+    # Confirm there is a player at this position and it is current users turn.
+    #  If so, make move, if not return 403
+    if not player:
+        return {'message': 'You are not player "{}"'.format(game.current_player)}, 403
+    elif player.id == current_user.id:
+        hand = Hand(player.hand)
+        played_pile = PlayedCards(player.played)
+        
+        played_pile.add_card(hand.get_card(index))
+        player.hand = hand.serialize()
+        player.played = played_pile.serialize()
+        player.save_to_db()
+
+        emit('card_played',
+            {
+                'hand': hand.serialize(),
+                'played': played_pile.serialize(),
+            },
+            broadcast=True
+        )
+    
+    return {'message': 'It is not your turn'}, 403
+
 
 @socketio.on('discard_card', namespace='/game')
 @authenticated_only
 def discard_card(data):
-    # need game id
-    # need card index to discard
-    global discardPile
-    player = get_user(data['pid'])
-    selectedCard = data['selectedCard']
-    card = player['hand'][selectedCard]
+    gameId = int(data['gameId'])
+    index = int(data['cardIndex'])
+
+    game = GameModel.find_by_id(gameId)
+    player = PlayerModel.query.with_parent(game).filter(PlayerModel.position == game.current_player).first()
     
-    del player['hand'][selectedCard]
-    discardPile[card['type']].append(card['value'])
+    
+    if player and player.user_id == current_user.id:
+        hand = Hand(player.hand)
+        discard = DiscardPile(game.discard_pile)
 
-    emit('discard_card',
-        {
-            'pid': player['id'],
-            'player': player,
-            'discardPile': discardPile
+        card = hand.get_card(index)
+        discard.add_card(card)
 
-        },
-        broadcast=True
-    )
+        player.hand = hand.serialize()
+        game.discard_pile = discard.serialize()
+        game.current_player = (game.current_player % 2) + 1
+
+        game.save_to_db()
+        player.save_to_db()
+        emit('discard_card', {
+                'hand': player.hand,
+                'discard': game.discard_pile,
+                'currentPlayer': game.current_player
+            },
+            broadcast=True
+        )
+
+    return {'message': "It is not your turn"}, 403
+
 
 @socketio.on('draw_card', namespace='/game')
 @authenticated_only
 def draw_card(data):
     gameId = int(data['gameId'])
-    game = Game.find_by_id(gameId)
-    deck = Deck(game.draw_pile)
-
-    if current_user.id == game.player_one_id:
-        hand = Hand(game.player_one_hand)
+    game = GameModel.find_by_id(gameId)
+    player = PlayerModel.query.with_parent(game).filter(PlayerModel.position == game.current_player).first()
+    
+    if player and player.user_id == current_user.id:
+        deck = Deck(game.draw_pile)
+        hand = Hand(player.hand)
         hand.add_card(deck.draw())
-        game.player_one_hand = hand.serialize()
+        player.hand = hand.serialize()
         game.draw_pile = deck.serialize()
-        game.current_player_id = game.player_two_id
-    else:
-        hand = Hand(game.player_two_hand)
-        hand.add_card(deck.draw())
-        game.player_two_hand = hand.serialize()
-        game.draw_pile = deck.serialize()
-        game.current_player_id = game.player_one_id
+        game.current_player = (game.current_player % 2) + 1
 
-    game.save_to_db()
+        game.save_to_db()
+        player.save_to_db()
+        emit('card_drawn', {
+                'hand': player.hand,
+                'deck': game.draw_pile,
+                'currentPlayer': game.current_player
+            },
+            broadcast=True
+        )
 
-    emit('card_drawn',
-        {
-            'playerHand': hand.serialize(),
-            'drawPile': deck.serialize(),
-            'currentPlayer': game.current_player_id
-        },
-        broadcast=True
-    )
+    return {'message': "It is currently player '{}' turn".format(game.current_player)}, 403
+
 
 @socketio.on('draw_discard', namespace='/game')
 def draw_from_discard_pile(data):
-    # need to know which pile to draw from
-    global discardPile
-    player = get_user(data['pid'])
-    card_value = discardPile[data['pile_color']].pop()
-    player['hand'].append({'type': data['pile_color'], 'value': card_value})
-    emit('draw_discard_pile',
-        {
-            'pid': data['pid'],
-            'player': player,
-            'discardPile': discardPile 
-        },
-        broadcast=True
+    gameId = int(data['gameId'])
+    color = data['color']
+
+    game = GameModel.find_by_id(gameId)
+    player = PlayerModel.query.with_parent(game).filter(PlayerModel.position == game.current_player).first()
+    
+    discard = DiscardPile(game.discard_pile)
+    card = discard.get_card(color)
+    
+    hand = Hand(player.hand)
+    hand.add_card(card)
+
+    game.discard_pile = discard.serialize()
+    player.hand = hand.serialize()
+
+    player.save_to_db()
+    game.save_to_db()
+    emit('discard_draw',
+         {
+             'currentPlayer': game.current_player,
+             'hand': player.hand,
+             'discard': game.discard_pile
+         },
+         broadcast=True
     )
-
-def get_user(pid):
-    global players
-    for player in players:
-        if player['id'] == pid:
-            return player
-
-def clear_game():
-    global players, currentPlayer, drawPile, discardPile
-    players = [
-        {
-            'id': 1,
-            'name': '',
-            'hand': [],
-            'played': {
-                'red': [],
-                'green': [],
-                'blue': [],
-                'white': [],
-                'yellow': []
-            },
-            'score': 0
-        },
-        {
-            'id': 2,
-            'name': '',
-            'hand': [],
-            'played': {
-                'red': [],
-                'green': [],
-                'blue': [],
-                'white': [],
-                'yellow': []
-            },
-            'score': 0
-        }
-    ]
-
-    currentPlayer = None
-
-    drawPile = []
-
-    discardPile = {
-        'red': [],
-        'green': [],
-        'blue': [],
-        'white': [],
-        'yellow': []
-    }

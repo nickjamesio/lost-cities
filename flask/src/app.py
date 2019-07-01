@@ -30,7 +30,7 @@ jwt = JWTManager(app)
 CORS(app, origins=["http://api.localhost", "http://nickjames.local"], supports_credentials=True)
 
 import socket_routes
-from models import user
+from models import user, player
 
 @jwt.user_claims_loader
 def add_claims_to_jwt(identity):

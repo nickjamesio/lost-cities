@@ -1,24 +1,26 @@
 from db import db
 from models.types.json_field import JSONEncoded
 
-class Game(db.Model):
+
+class GameModel(db.Model):
     """
     Game model
     """
     __tablename__ = 'game'
 
     id = db.Column(db.Integer, primary_key=True)
-    player_one_id = db.Column(db.Integer)
-    player_two_id = db.Column(db.Integer)
-    current_player_id = db.Column(db.Integer)
-    player_one_hand = db.Column(JSONEncoded(400))
-    player_two_hand = db.Column(JSONEncoded(400))
-    player_one_played = db.Column(JSONEncoded(400))
-    player_two_played = db.Column(JSONEncoded(400))
-    draw_pile = db.Column(JSONEncoded(800))
-    discard_pile = db.Column(JSONEncoded(800))
-    player_one_score = db.Column(db.Integer)
-    player_two_score = db.Column(db.Integer)
+    current_player = db.Column(db.Integer, default=1)
+    draw_pile = db.Column(JSONEncoded(1000))
+    discard_pile = db.Column(JSONEncoded(1000), default={
+        'red': [],
+        'green': [],
+        'blue': [],
+        'white': [],
+        'yellow': []
+    })
+
+    # One to many
+    players = db.relationship("PlayerModel", back_populates="game")
 
     def save_to_db(self):
         db.session.add(self)
@@ -27,3 +29,6 @@ class Game(db.Model):
     @classmethod
     def find_by_id(cls, gid):
         return cls.query.filter_by(id=gid).first()
+
+    def __repr__(self):
+        return '<Game {}>'.format(self.id)
