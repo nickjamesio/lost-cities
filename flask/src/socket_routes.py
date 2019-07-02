@@ -48,6 +48,7 @@ def default_error_handler(e):
 
 
 @socketio.on('test', namespace='/game')
+@authenticated_only
 def test(data):
     print(data)
     emit('worked', {'message', 'worked'})
