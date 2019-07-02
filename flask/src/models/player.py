@@ -1,5 +1,5 @@
-from db import db
-from models.types.json_field import JSONEncoded
+from src.db import db
+from src.models.types.json_field import JSONEncoded
 
 
 class PlayerModel(db.Model):

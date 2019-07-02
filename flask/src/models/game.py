@@ -1,5 +1,5 @@
-from db import db
-from models.types.json_field import JSONEncoded
+from src.db import db
+from src.models.types.json_field import JSONEncoded
 
 
 class GameModel(db.Model):
@@ -18,6 +18,7 @@ class GameModel(db.Model):
         'white': [],
         'yellow': []
     })
+    game_over = db.Column(db.Boolean, default=False)
 
     # One to many
     players = db.relationship("PlayerModel", back_populates="game")

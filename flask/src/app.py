@@ -5,10 +5,10 @@ from flask_cors import CORS
 from flask_socketio import SocketIO
 from flask_jwt_extended import JWTManager
 
-from db import db
-from config import Config
-from resources.home import Home
-from resources.user import (
+from src.db import db
+from src.config import Config
+from src.resources.home import Home
+from src.resources.user import (
     UserRegister,
     User,
     UserList,
@@ -29,8 +29,8 @@ jwt = JWTManager(app)
 # else:
 CORS(app, origins=["http://api.localhost", "http://nickjames.local"], supports_credentials=True)
 
-import socket_routes
-from models import user, player
+import src.socket_routes
+from src.models import user, player
 
 @jwt.user_claims_loader
 def add_claims_to_jwt(identity):

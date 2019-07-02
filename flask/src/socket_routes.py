@@ -3,10 +3,10 @@ import functools
 from flask import request, jsonify
 from jwt import ExpiredSignatureError
 from flask_jwt_extended.exceptions import NoAuthorizationError
-from app import socketio
-from models.game import GameModel
-from models.player import PlayerModel
-from util.cards import Card, Hand, Deck, PlayedCards, DiscardPile
+from src.app import socketio
+from src.models.game import GameModel
+from src.models.player import PlayerModel
+from src.util.cards import Card, Hand, Deck, PlayedCards, DiscardPile
 from flask_socketio import (
     emit,
     join_room,
@@ -48,9 +48,9 @@ def default_error_handler(e):
 
 
 @socketio.on('test', namespace='/game')
-@jwt_required
 def test(data):
     print(data)
+    emit('worked', {'message', 'worked'})
 
 # @socketio.on('refresh', namespace='/game')
 # @jwt_refresh_token_required
@@ -67,6 +67,10 @@ def test(data):
 @authenticated_only
 def join_game(data):
     # TODO confirm there is id in data
+    # TODO Do following checks
+    #   confirm 'position' data
+    #   confirm 'gameId' data
+    #   confirm can find game
 
     position = data['playerPosition']
     game = GameModel.find_by_id(data['gameId'])
@@ -88,11 +92,11 @@ def join_game(data):
 
     emit('game_joined',
          {
+             'currentPlayer': game.current_player,
+             'played': player.played,
              'deck': game.draw_pile,
              'discard': game.discard_pile,
-             'currentPlayer': game.current_player,
-             'hand': player.hand,
-             'played': player.played
+             'hand': player.hand
          }
     )
 
@@ -100,7 +104,8 @@ def join_game(data):
 @socketio.on('new_game', namespace='/game')
 @authenticated_only
 def new_game(data):
-    # TODO confirm playerPosition is in data
+    # TODO perform following checks
+    #   confirm playerPosition is in data
     deck = Deck()
     hand = deck.deal_hand()
 
