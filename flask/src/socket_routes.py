@@ -57,6 +57,41 @@ def default_error_handler(e):
 
 #     return resp, 200
 
+@socketio.on('new_game', namespace='/game')
+@authenticated_only
+def new_game(data):
+    if 'position' not in data:
+        return {'message': "'position' must be sent as part of the request"}
+    
+    position = int(data['position'])
+    deck = Deck()
+    hand = deck.deal_hand(position)
+
+    player = PlayerModel()
+    player.hand = hand.serialize()
+    player.user = current_user
+    player.position = position
+
+    game = GameModel()
+    game.draw_pile = deck.serialize()
+    game.players.append(player)
+    game.save_to_db()
+
+    # Join a room so only people associated with this room/game
+    # will be sent events
+    join_room(game.id)
+
+    emit('game_created',
+         {
+             'gameId': game.id,
+             'position': player.position,
+             'hand': player.hand,
+             'deck': game.draw_pile,
+             'discard': game.discard_pile,
+             'currentPlayer': game.current_player,
+             'played': player.played
+         }
+    )
 
 @socketio.on('join_game', namespace='/game')
 @authenticated_only
@@ -104,42 +139,6 @@ def join_game(data):
     # to be played now that there are 2 players
     if PlayerModel.query.with_parent(game).count() == 2:
         emit('game_ready', {'ready': True}, room=game.id)
-
-@socketio.on('new_game', namespace='/game')
-@authenticated_only
-def new_game(data):
-    if 'position' not in data:
-        return {'message': "'position' must be sent as part of the request"}
-    
-    position = int(data['position'])
-    deck = Deck()
-    hand = deck.deal_hand(position)
-
-    player = PlayerModel()
-    player.hand = hand.serialize()
-    player.user = current_user
-    player.position = position
-
-    game = GameModel()
-    game.draw_pile = deck.serialize()
-    game.players.append(player)
-    game.save_to_db()
-
-    # Join a room so only people associated with this room/game
-    # will be sent events
-    join_room(game.id)
-
-    emit('game_created',
-         {
-             'gameId': game.id,
-             'position': player.position,
-             'hand': player.hand,
-             'deck': game.draw_pile,
-             'discard': game.discard_pile,
-             'currentPlayer': game.current_player,
-             'played': player.played
-         }
-    )
 
 
 @socketio.on('play_card', namespace='/game')
