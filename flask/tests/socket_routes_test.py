@@ -1,11 +1,8 @@
 import os
 import tempfile
 import pytest
-from sqlalchemy.sql import text
 from flask import Flask, request, json as flask_json
 from flask_socketio import (
-    SocketIO, 
-    send,
     emit,
     join_room,
     leave_room,
@@ -15,6 +12,9 @@ from flask_socketio import (
 from src.app import app, socketio
 from src.db import db
 from src.models.user import UserModel
+from src.models.game import GameModel
+from util.auth import AuthActions
+from util.data import TestData
 
 basedir = os.path.abspath(os.path.dirname(__file__))
 
@@ -23,47 +23,127 @@ def stuff(data):
     emit('response', 'stuff')
 
 @pytest.fixture
-def client():
+def flask_app():
     db_fd, db_path = tempfile.mkstemp()
     app.config['SECRET_KEY'] = 'secret'
     app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///' + os.path.join(basedir, 'data.db')
-    client = socketio.test_client(app, namespace='/game')
     
-    user_data = ({'name': 'one', 'pass': 'blah'}, {'name': 'two', 'pass': 'blah'})
-    game_data = (
-        {
-            'current': 1,
-            'deck': '[{"typ":"red","val":"h"},{"typ":"blue","val":"h"},{"typ":"white","val":"7"},{"typ":"yellow","val":"7"},{"typ":"blue","val":"8"},{"typ":"green","val":"10"},{"typ":"red","val":"10"},{"typ":"green","val":"8"},{"typ":"yellow","val":"h"},{"typ":"yellow","val":"10"},{"typ":"yellow","val":"4"},{"typ":"green","val":"5"},{"typ":"yellow","val":"6"},{"typ":"green","val":"3"},{"typ":"blue","val":"6"},{"typ":"green","val":"h"},{"typ":"yellow","val":"5"},{"typ":"white","val":"3"},{"typ":"red","val":"h"},{"typ":"green","val":"h"},{"typ":"red","val":"8"},{"typ":"red","val":"5"},{"typ":"blue","val":"10"},{"typ":"blue","val":"2"},{"typ":"white","val":"10"},{"typ":"blue","val":"7"},{"typ":"blue","val":"4"},{"typ":"green","val":"9"},{"typ":"blue","val":"9"},{"typ":"green","val":"2"},{"typ":"yellow","val":"3"},{"typ":"yellow","val":"9"},{"typ":"red","val":"3"},{"typ":"white","val":"8"},{"typ":"white","val":"4"},{"typ":"white","val":"5"},{"typ":"yellow","val":"h"},{"typ":"red","val":"6"},{"typ":"green","val":"7"},{"typ":"red","val":"2"},{"typ":"blue","val":"5"},{"typ":"white","val":"2"},{"typ":"green","val":"6"},{"typ":"blue","val":"3"},{"typ":"yellow","val":"2"},{"typ":"green","val":"4"},{"typ":"yellow","val":"8"},{"typ":"yellow","val":"h"},{"typ":"red","val":"9"},{"typ":"white","val":"h"},{"typ":"blue","val":"h"},{"typ":"white","val":"h"}]',
-            'discard': '{"red":[],"green":[],"blue":[],"white":[],"yellow":[]}',
-            'over': False
-        },
-        {
-            'current': 2,
-            'deck': '[{"typ":"red","val":"h"},{"typ":"blue","val":"h"},{"typ":"white","val":"7"},{"typ":"yellow","val":"7"},{"typ":"blue","val":"8"},{"typ":"green","val":"10"},{"typ":"red","val":"10"},{"typ":"green","val":"8"},{"typ":"yellow","val":"h"},{"typ":"yellow","val":"10"},{"typ":"yellow","val":"4"},{"typ":"green","val":"5"},{"typ":"yellow","val":"6"},{"typ":"green","val":"3"},{"typ":"blue","val":"6"},{"typ":"green","val":"h"},{"typ":"yellow","val":"5"},{"typ":"white","val":"3"},{"typ":"red","val":"h"},{"typ":"green","val":"h"},{"typ":"red","val":"8"},{"typ":"red","val":"5"},{"typ":"blue","val":"10"},{"typ":"blue","val":"2"},{"typ":"white","val":"10"},{"typ":"blue","val":"7"},{"typ":"blue","val":"4"},{"typ":"green","val":"9"},{"typ":"blue","val":"9"},{"typ":"green","val":"2"},{"typ":"yellow","val":"3"},{"typ":"yellow","val":"9"},{"typ":"red","val":"3"},{"typ":"white","val":"8"},{"typ":"white","val":"4"},{"typ":"white","val":"5"},{"typ":"yellow","val":"h"},{"typ":"red","val":"6"},{"typ":"green","val":"7"},{"typ":"red","val":"2"},{"typ":"blue","val":"5"},{"typ":"white","val":"2"},{"typ":"green","val":"6"},{"typ":"blue","val":"3"},{"typ":"yellow","val":"2"},{"typ":"green","val":"4"},{"typ":"yellow","val":"8"},{"typ":"yellow","val":"h"},{"typ":"red","val":"9"},{"typ":"white","val":"h"},{"typ":"blue","val":"h"},{"typ":"white","val":"h"}]',
-            'discard': '{"red":[],"green":[],"blue":[],"white":[],"yellow":[]}',
-            'over': False
-        })
-    user_statement = text("INSERT INTO users (username, password) VALUES(:name, :pass)")   
-    game_statement = text("INSERT INTO game (current_player, draw_pile, discard_pile, game_over) VALUES(:current, :deck, :discard, :over)")
     with app.app_context() as context, db.engine.connect() as con:
         db.init_app(app)
         db.create_all()
-        for user in user_data:
-            con.execute(user_statement, **user)
+        test_data = TestData(con)
+        test_data.create_test_games()
+        test_data.create_test_users()
 
-        player = UserModel.find_by_id(1)
-        # db.executescript(_data_sql)
-
-    yield client
+    yield app
 
     os.close(db_fd)
-    os.unlink(app.config['DATABASE'])
+    os.unlink(os.path.join(basedir, 'data.db'))
 
+@pytest.fixture
+def app_client(flask_app):
+    return app.test_client()
 
+@pytest.fixture
+def auth(app_client):
+    return AuthActions(app_client)
 
-def test_new_game(client):
-    # response = client.get('/')
-    # received1 = client.get_received()
-    client.emit('test', {'blah': 'stuff'}, namespace="/game")
-    # recieved = client.get_received('/game')
-    x = 1
+@pytest.fixture
+def app_context(flask_app):
+    """
+    Use this fixture if a query against the database is needed
+    """
+    with flask_app.app_context() as context:
+        yield context
+
+@pytest.fixture
+def auth_socket_client(auth, flask_app, app_client):
+    auth.login()
+    return socketio.test_client(flask_app, namespace='/game', flask_test_client=app_client)
+
+def test_perform_action_not_authenticated(app_client):
+    # test performing each action on game while unauthenticated
+    # confirm connection is disconnected
+    pass
+
+def test_new_game_no_position(auth_socket_client):
+    ack = auth_socket_client.emit('new_game', {}, namespace="/game", callback=True)
+    
+    assert 'message' in ack
+    assert ack['message'] == "'position' must be sent as part of the request"
+
+def test_new_game(auth_socket_client, app_context):
+    auth_socket_client.emit('new_game', {'position': 1}, namespace="/game")
+    recieved = auth_socket_client.get_received('/game')
+    
+    gameData = recieved[0]['args'][0]
+
+    assert gameData['currentPlayer'] == 1
+    assert gameData['position'] == 1
+    assert 'hand' in gameData
+    assert 'deck' in gameData
+    assert 'discard' in gameData
+    assert 'gameId' in gameData
+    assert 'played' in gameData
+
+    # with flask_app.app_context():
+    game = GameModel.find_by_id(gameData['gameId'])
+    assert game is not None
+
+@pytest.mark.parametrize(("data", "message"), (
+    ({'gameId': 1}, "'position' must be sent as part of the request"),
+    ({'position': 1}, "'gameId' must be sent as part of the request")
+))
+def test_join_game_missing_data(auth, flask_app, app_client, data, message):
+    auth.login()
+    client = socketio.test_client(app, namespace='/game', flask_test_client=app_client)
+    ack = client.emit('join_game', data, namespace="/game", callback=True)
+
+    assert ack == {'message': message}
+
+def test_join_game_not_exist(auth, flask_app, app_client):
+    pass
+
+def test_join_game_new_player(auth, flask_app, app_client):
+    # confirm data is as expected
+    # confirm only client making request gets response
+    # other clients should not get response
+    pass
+
+def test_play_card_missing_data(auth, app_client):
+    # test missing cardIndex
+    # test missing gameId
+    pass
+
+def test_play_card_not_player_turn(auth, app_client):
+    pass
+
+def test_play_card_is_player_turn(auth, app_client):
+    pass
+
+def test_discard_card_missing_data(auth, app_client):
+    pass
+
+def test_discard_card_not_player_turn(auth, app_client):
+    pass
+
+def test_discard_card_is_player_turn(auth, app_client):
+    pass
+
+def test_draw_card_missing_data(auth, app_client):
+    pass
+
+def test_draw_card_not_player_turn(auth, app_client):
+    pass
+
+def test_draw_card_is_player_turn(auth, app_client):
+    pass
+
+def test_discard_draw_missing_data(auth, app_client):
+    pass
+
+def test_discard_draw_not_player_turn(auth, app_client):
+    pass
+
+def test_discard_draw_is_player_turn(auth, app_client):
+    pass

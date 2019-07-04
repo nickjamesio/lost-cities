@@ -47,12 +47,6 @@ def default_error_handler(e):
     raise e
 
 
-@socketio.on('test', namespace='/game')
-@authenticated_only
-def test(data):
-    print(data)
-    emit('worked', {'message', 'worked'})
-
 # @socketio.on('refresh', namespace='/game')
 # @jwt_refresh_token_required
 # def refresh_token(data):
@@ -67,18 +61,20 @@ def test(data):
 @socketio.on('join_game', namespace='/game')
 @authenticated_only
 def join_game(data):
-    # TODO confirm there is id in data
-    # TODO Do following checks
-    #   confirm 'position' data
-    #   confirm 'gameId' data
-    #   confirm can find game
+    if 'position' not in data:
+        return {'message': "'position' must be sent as part of the request"}
+    elif 'gameId' not in data:
+        return {'message': "'gameId' must be sent as part of the request"}
 
-    position = data['playerPosition']
-    game = GameModel.find_by_id(data['gameId'])
+    game = GameModel.find_by_id(int(data['gameId']))
+    if not game:
+        return {'message': "could not find game with id '{}'".format(data['gameId'])}
+
+    position = int(data['position'])
     player = PlayerModel.query.with_parent(game).filter(PlayerModel.position == position).first()
     
-    # Check if there is a player at that position already. If not
-    # add the user. If so, replace them.
+    # Check if there is a player at that position already. If not, add the current player.
+    # If so, replace them.
     if not player:
         deck = Deck(game.draw_pile)
         player = PlayerModel()
@@ -91,6 +87,10 @@ def join_game(data):
         player.user = current_user
         player.save_to_db()
 
+    # Join a room so only people associated with this room/game
+    # will be sent events
+    join_room(game.id)
+
     emit('game_joined',
          {
              'currentPlayer': game.current_player,
@@ -98,27 +98,33 @@ def join_game(data):
              'deck': game.draw_pile,
              'discard': game.discard_pile,
              'hand': player.hand
-         }
+         },
+        room=game.id
     )
 
 
 @socketio.on('new_game', namespace='/game')
 @authenticated_only
 def new_game(data):
-    # TODO perform following checks
-    #   confirm playerPosition is in data
+    if 'position' not in data:
+        return {'message': "'position' must be sent as part of the request"}
+    
     deck = Deck()
     hand = deck.deal_hand()
 
     player = PlayerModel()
     player.hand = hand.serialize()
     player.user = current_user
-    player.position = int(data['playerPosition'])
+    player.position = int(data['position'])
 
     game = GameModel()
     game.draw_pile = deck.serialize()
     game.players.append(player)
     game.save_to_db()
+
+    # Join a room so only people associated with this room/game
+    # will be sent events
+    join_room(game.id)
 
     emit('game_created',
          {
@@ -129,7 +135,8 @@ def new_game(data):
              'discard': game.discard_pile,
              'currentPlayer': game.current_player,
              'played': player.played
-         }
+         },
+         room=game.id
     )
 
 
@@ -143,11 +150,7 @@ def play_card(data):
     game = GameModel.find_by_id(gameId)
     player = PlayerModel.query.with_parent(game).filter(PlayerModel.position == game.current_player).first()
     
-    # Confirm there is a player at this position and it is current users turn.
-    #  If so, make move, if not return 403
-    if not player:
-        return {'message': 'You are not player "{}"'.format(game.current_player)}, 403
-    elif player.id == current_user.id:
+    if player and player.id == current_user.id:
         hand = Hand(player.hand)
         played_pile = PlayedCards(player.played)
         
@@ -164,7 +167,7 @@ def play_card(data):
             broadcast=True
         )
     
-    return {'message': 'It is not your turn'}, 403
+    return {'message': 'It is not your turn'}
 
 
 @socketio.on('discard_card', namespace='/game')
@@ -175,7 +178,6 @@ def discard_card(data):
 
     game = GameModel.find_by_id(gameId)
     player = PlayerModel.query.with_parent(game).filter(PlayerModel.position == game.current_player).first()
-    
     
     if player and player.user_id == current_user.id:
         hand = Hand(player.hand)
