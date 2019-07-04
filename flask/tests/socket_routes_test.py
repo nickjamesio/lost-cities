@@ -94,21 +94,59 @@ def test_new_game(auth_socket_client, app_context):
     ({'gameId': 1}, "'position' must be sent as part of the request"),
     ({'position': 1}, "'gameId' must be sent as part of the request")
 ))
-def test_join_game_missing_data(auth, flask_app, app_client, data, message):
-    auth.login()
-    client = socketio.test_client(app, namespace='/game', flask_test_client=app_client)
-    ack = client.emit('join_game', data, namespace="/game", callback=True)
+def test_join_game_missing_data(auth_socket_client, data, message):
+    ack = auth_socket_client.emit('join_game', data, namespace="/game", callback=True)
 
     assert ack == {'message': message}
 
-def test_join_game_not_exist(auth, flask_app, app_client):
-    pass
+def test_join_game_not_exist(auth_socket_client):
+    data = {'position': 1, 'gameId': 5}
+    ack = auth_socket_client.emit('join_game', data, namespace="/game", callback=True)
 
-def test_join_game_new_player(auth, flask_app, app_client):
-    # confirm data is as expected
-    # confirm only client making request gets response
-    # other clients should not get response
-    pass
+    assert ack['message'] == "could not find game with id '5'"
+
+def test_join_game_new_player(auth, flask_app, app_client, app_context):
+    auth.login('one', 'blah')
+    client1 = socketio.test_client(flask_app, namespace='/game', flask_test_client=app_client)
+    
+    auth.login('two', 'blah')
+    client2 = socketio.test_client(flask_app, namespace='/game', flask_test_client=app_client)
+    
+    data1 = {'position': 1, 'gameId': 1}
+    data2 = {'position': 2, 'gameId': 1}
+    client1.emit('join_game', data1, namespace="/game")
+    received = client1.get_received('/game')
+
+    p1GameData = received[0]['args'][0]
+    assert len(received) == 1
+    assert p1GameData['currentPlayer'] == 1
+    assert 'played' in p1GameData
+    assert 'deck' in p1GameData
+    assert 'discard' in p1GameData
+    assert 'hand' in p1GameData
+
+    client2.emit('join_game', data2, namespace="/game")
+    received = client2.get_received('/game')
+    
+    p2GameData = received[0]['args'][0]
+    assert len(received) == 2
+    assert 'played' in p2GameData
+    assert 'deck' in p2GameData
+    assert 'discard' in p2GameData
+    assert 'hand' in p2GameData
+
+    assert 'ready' in received[1]['args'][0]
+    assert received[1]['args'][0]['ready'] == True
+
+    assert p1GameData['hand'] != p2GameData
+    assert p1GameData['played'] == p2GameData['played']
+    assert p1GameData['deck'] == p2GameData['deck']
+    assert p1GameData['discard'] == p2GameData['discard']
+    
+    received = client1.get_received('/game')
+    assert 'ready' in received[0]['args'][0]
+    assert received[0]['args'][0]['ready'] == True
+    
 
 def test_play_card_missing_data(auth, app_client):
     # test missing cardIndex

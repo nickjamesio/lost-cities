@@ -77,10 +77,19 @@ class Deck(CardStack):
     def draw_pile(self):
         return self.stack
 
-    def deal_hand(self):
+    def deal_hand(self, position):
         self.shuffle()
-        tmp_hand = self.stack[0:16:2]
-        self.stack = self.stack[8:]
+
+        # Dealing a hand for each player should work as if the cards were
+        # being delt back and forth. This means player one gets every other
+        # card and player two gets the first 8 since all the between cards
+        # have already been removed
+        if position == 1:
+            tmp_hand = self.stack[0:16:2]
+            self.stack = self.stack[1:17:2] + self.stack[16:]
+        else:
+            tmp_hand = self.stack[0:8]
+            self.stack = self.stack[8:]
 
         hand = Hand()
         for card in tmp_hand:
