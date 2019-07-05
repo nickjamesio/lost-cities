@@ -231,17 +231,69 @@ def test_play_card_is_player_turn(auth, flask_app, app_client):
     assert playedData['played'][2]['white'] == []
     assert playedData['played'][2]['yellow'] == []
 
-def test_discard_card_missing_data(auth, app_client):
-    pass
+@pytest.mark.parametrize(("data", "message"), (
+    ({'gameId': 1}, "'cardIndex' must be sent as part of the request"),
+    ({'cardIndex': 1}, "'gameId' must be sent as part of the request")
+))
+def test_discard_card_missing_data(auth_socket_client, data, message):
+    ack = auth_socket_client.emit('discard_card', data, namespace="/game", callback=True)
 
-def test_discard_card_not_player_turn(auth, app_client):
-    pass
+    assert ack == {'message': message}
 
-def test_discard_card_is_player_turn(auth, app_client):
-    pass
+def test_discard_card_not_player_turn(auth_socket_client):
+    # Attempt to discard a card on a game that has no players
+    data = {'cardIndex': 1, 'gameId': 1}
+    ack = auth_socket_client.emit('discard_card', data, namespace="/game", callback=True)
 
-def test_draw_card_missing_data(auth, app_client):
-    pass
+    assert ack == {'message': 'It is not your turn'}
+    
+    # Join the game but as player 2. Attempt to discard a card
+    # when it is player one's turn
+    auth_socket_client.emit('join_game', {'gameId': 1, 'position': 2}, namespace="/game")
+    auth_socket_client.get_received('/game')
+
+    ack = auth_socket_client.emit('discard_card', data, namespace="/game", callback=True)
+    assert ack == {'message': 'It is not your turn'}
+
+def test_discard_card_is_player_turn(auth, flask_app, app_client):
+    auth.login('one', 'blah')
+    client1 = socketio.test_client(flask_app, namespace='/game', flask_test_client=app_client)
+    client1.emit('join_game', {'position': 1, 'gameId': 1}, namespace="/game")
+    playerOneInitial = client1.get_received('/game')
+    
+    auth.login('two', 'blah')
+    client2 = socketio.test_client(flask_app, namespace='/game', flask_test_client=app_client)
+    client2.emit('join_game', {'position': 2, 'gameId': 1}, namespace="/game")
+    client2.get_received('/game')
+    # clear out ready response sent to first client
+    client1.get_received('/game')
+
+    data = {'cardIndex': 1, 'gameId': 1}
+    client1.emit('discard_card', data, namespace="/game")
+    received = client1.get_received('/game')
+
+    handData = received[0]['args'][0]
+    discardData = received[1]['args'][0]
+
+    # confirm hand is updated after discard
+    handCopy = playerOneInitial[0]['args'][0]['hand'][:]
+    card = handCopy[1]
+    del handCopy[1] 
+    assert handData['hand'] == handCopy
+
+    # Confirm discard pile and current player is updated
+    initialDiscard = playerOneInitial[0]['args'][0]['discard']
+    assert initialDiscard == {'red': [],'green': [],'blue': [],'white': [],'yellow': []}
+    
+    discardPile = {'red': [],'green': [],'blue': [],'white': [],'yellow': []}
+    discardPile[card['typ']].append(card)
+    assert discardData['discard'] == discardPile
+    assert discardData['currentPlayer'] == 2
+
+def test_draw_card_missing_data(auth_socket_client):
+    ack = auth_socket_client.emit('discard_card', {}, namespace="/game", callback=True)
+
+    assert ack == {'message': "'cardIndex' must be sent as part of the request"}
 
 def test_draw_card_not_player_turn(auth, app_client):
     pass

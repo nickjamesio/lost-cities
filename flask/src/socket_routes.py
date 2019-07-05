@@ -231,8 +231,10 @@ def discard_card(data):
     index = int(data['cardIndex'])
 
     game = GameModel.find_by_id(gameId)
-    player = PlayerModel.query.with_parent(game).filter(PlayerModel.position == game.current_player).first()
+    if not game:
+        return {'message': "could not find game with id '{}'".format(data['gameId'])}
     
+    player = PlayerModel.query.with_parent(game).filter(PlayerModel.position == game.current_player).first()
     if player and player.user_id == current_user.id:
         hand = Hand(player.hand)
         discard = DiscardPile(game.discard_pile)
@@ -246,24 +248,32 @@ def discard_card(data):
 
         game.save_to_db()
         player.save_to_db()
+
+        emit('updated_hand',
+            {'hand': hand.serialize()}
+        )
         emit('discard_card', {
-                'hand': player.hand,
                 'discard': game.discard_pile,
                 'currentPlayer': game.current_player
             },
-            broadcast=True
+            room=game.id
         )
 
-    return {'message': "It is not your turn"}, 403
+    return {'message': "It is not your turn"}
 
 
 @socketio.on('draw_card', namespace='/game')
 @authenticated_only
 def draw_card(data):
+    if 'cardIndex' not in data:
+        return {'message': "'cardIndex' must be sent as part of the request"}
+    
     gameId = int(data['gameId'])
     game = GameModel.find_by_id(gameId)
+    if not game:
+        return {'message': "could not find game with id '{}'".format(data['gameId'])}
+
     player = PlayerModel.query.with_parent(game).filter(PlayerModel.position == game.current_player).first()
-    
     if player and player.user_id == current_user.id:
         deck = Deck(game.draw_pile)
         hand = Hand(player.hand)
@@ -274,12 +284,15 @@ def draw_card(data):
 
         game.save_to_db()
         player.save_to_db()
+        
+        emit('updated_hand',
+            {'hand': hand.serialize()}
+        )
         emit('card_drawn', {
-                'hand': player.hand,
                 'deck': game.draw_pile,
                 'currentPlayer': game.current_player
             },
-            broadcast=True
+            room=game.id
         )
 
     return {'message': "It is currently player '{}' turn".format(game.current_player)}, 403
