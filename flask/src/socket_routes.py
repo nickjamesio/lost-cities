@@ -80,6 +80,11 @@ def new_game(data):
     # Join a room so only people associated with this room/game
     # will be sent events
     join_room(game.id)
+    # TODO consider joining a second room named like so 'player_1_game_4'
+    # this would allow methods to send messages directly to one user in a game
+
+    opponent_position = (position % 2) + 1
+    opponent = PlayerModel.query.with_parent(game).filter(PlayerModel.position == opponent_position).first()
 
     emit('game_created',
          {
@@ -89,7 +94,16 @@ def new_game(data):
              'deck': game.draw_pile,
              'discard': game.discard_pile,
              'currentPlayer': game.current_player,
-             'played': player.played
+             'played': {
+                position: player.played,
+                opponent_position: opponent.played if opponent else {
+                    'red': [],
+                    'green': [],
+                    'blue': [],
+                    'white': [],
+                    'yellow': []
+                }
+            }
          }
     )
 
@@ -117,23 +131,36 @@ def join_game(data):
         player.position = position
         player.user = current_user
         player.game = game
+        player.save_to_db()
     elif player.user_id != current_user.id:
         player.user = current_user
-
-    player.save_to_db()
+        player.save_to_db()
     
     # Join a room for the game so only people associated with this game
     # will be sent events
     join_room(game.id)
 
+    opponent_position = (position % 2) + 1
+    opponent = PlayerModel.query.with_parent(game).filter(PlayerModel.position == opponent_position).first()
+
     emit('game_joined',
-         {
-             'currentPlayer': game.current_player,
-             'played': player.played,
-             'deck': game.draw_pile,
-             'discard': game.discard_pile,
-             'hand': player.hand
-         }
+        {
+            'currentPlayer': game.current_player,
+            'deck': game.draw_pile,
+            'discard': game.discard_pile,
+            'hand': player.hand,
+            'played': {
+                position: player.played,
+                opponent_position: opponent.played if opponent else {
+                    'red': [],
+                    'green': [],
+                    'blue': [],
+                    'white': [],
+                    'yellow': []
+                }
+            },
+            'over': game.is_over
+        }
     )
     # Send both clients a message saying the game is ready to
     # to be played now that there are 2 players
@@ -144,14 +171,21 @@ def join_game(data):
 @socketio.on('play_card', namespace='/game')
 @authenticated_only
 def play_card(data):
-    # TODO make sure data fields are present
+    if 'cardIndex' not in data:
+        return {'message': "'cardIndex' must be sent as part of the request"}
+    elif 'gameId' not in data:
+        return {'message': "'gameId' must be sent as part of the request"}
+
     index = int(data['cardIndex'])
     gameId = int(data['gameId'])
 
     game = GameModel.find_by_id(gameId)
+    if not game:
+        return {'message': "could not find game with id '{}'".format(data['gameId'])}
+
     player = PlayerModel.query.with_parent(game).filter(PlayerModel.position == game.current_player).first()
     
-    if player and player.id == current_user.id:
+    if player and player.user_id == current_user.id:
         hand = Hand(player.hand)
         played_pile = PlayedCards(player.played)
         
@@ -160,12 +194,26 @@ def play_card(data):
         player.played = played_pile.serialize()
         player.save_to_db()
 
-        emit('card_played',
+        opponent_position = (player.position % 2) + 1
+        opponent = PlayerModel.query.with_parent(game).filter(PlayerModel.position == opponent_position).first()
+
+        emit('updated_hand',
+            {'hand': hand.serialize()}
+        )
+        emit('played_cards',
             {
-                'hand': hand.serialize(),
-                'played': played_pile.serialize(),
+                'played': {
+                    player.position: player.played,
+                    opponent_position: opponent.played if opponent else {
+                        'red': [],
+                        'green': [],
+                        'blue': [],
+                        'white': [],
+                        'yellow': []
+                    }
+                }
             },
-            broadcast=True
+            room=game.id
         )
     
     return {'message': 'It is not your turn'}
@@ -174,6 +222,11 @@ def play_card(data):
 @socketio.on('discard_card', namespace='/game')
 @authenticated_only
 def discard_card(data):
+    if 'cardIndex' not in data:
+        return {'message': "'cardIndex' must be sent as part of the request"}
+    elif 'gameId' not in data:
+        return {'message': "'gameId' must be sent as part of the request"}
+    
     gameId = int(data['gameId'])
     index = int(data['cardIndex'])
 

@@ -18,7 +18,7 @@ class GameModel(db.Model):
         'white': [],
         'yellow': []
     })
-    game_over = db.Column(db.Boolean, default=False)
+    is_over = db.Column(db.Boolean, default=False)
 
     # One to many
     players = db.relationship("PlayerModel", back_populates="game")

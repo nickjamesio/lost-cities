@@ -1,4 +1,5 @@
 import os
+import json
 import tempfile
 import pytest
 from flask import Flask, request, json as flask_json
@@ -14,9 +15,7 @@ from src.db import db
 from src.models.user import UserModel
 from src.models.game import GameModel
 from util.auth import AuthActions
-from util.data import TestData
-
-basedir = os.path.abspath(os.path.dirname(__file__))
+from util.data import TestData, game_data
 
 @socketio.on('blah')
 def stuff(data):
@@ -26,9 +25,9 @@ def stuff(data):
 def flask_app():
     db_fd, db_path = tempfile.mkstemp()
     app.config['SECRET_KEY'] = 'secret'
-    app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///' + os.path.join(basedir, 'data.db')
+    app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///' + db_path
     
-    with app.app_context() as context, db.engine.connect() as con:
+    with app.app_context(), db.engine.connect() as con:
         db.init_app(app)
         db.create_all()
         test_data = TestData(con)
@@ -38,11 +37,11 @@ def flask_app():
     yield app
 
     os.close(db_fd)
-    os.unlink(os.path.join(basedir, 'data.db'))
+    os.unlink(os.path.join(db_path))
 
 @pytest.fixture
 def app_client(flask_app):
-    return app.test_client()
+    return flask_app.test_client()
 
 @pytest.fixture
 def auth(app_client):
@@ -118,21 +117,35 @@ def test_join_game_new_player(auth, flask_app, app_client, app_context):
     received = client1.get_received('/game')
 
     p1GameData = received[0]['args'][0]
+    expectedData = game_data[0]
+
     assert len(received) == 1
-    assert p1GameData['currentPlayer'] == 1
-    assert 'played' in p1GameData
-    assert 'deck' in p1GameData
-    assert 'discard' in p1GameData
+    assert p1GameData['currentPlayer'] == expectedData['current']
+    assert p1GameData['deck'] == expectedData['deck']
+    assert p1GameData['over'] == expectedData['over']
+    assert p1GameData['discard'] == {'red': [],
+        'green': [],
+        'blue': [],
+        'white': [],
+        'yellow': []}
     assert 'hand' in p1GameData
+    assert 'played' in p1GameData
 
     client2.emit('join_game', data2, namespace="/game")
     received = client2.get_received('/game')
     
     p2GameData = received[0]['args'][0]
     assert len(received) == 2
-    assert 'played' in p2GameData
-    assert 'deck' in p2GameData
+    assert p2GameData['currentPlayer'] == expectedData['current']
+    assert p2GameData['deck'] == expectedData['deck']
+    assert p2GameData['over'] == expectedData['over']
+    assert p2GameData['discard'] == {'red': [],
+        'green': [],
+        'blue': [],
+        'white': [],
+        'yellow': []}
     assert 'discard' in p2GameData
+    assert 'played' in p2GameData
     assert 'hand' in p2GameData
 
     assert 'ready' in received[1]['args'][0]
@@ -147,17 +160,76 @@ def test_join_game_new_player(auth, flask_app, app_client, app_context):
     assert 'ready' in received[0]['args'][0]
     assert received[0]['args'][0]['ready'] == True
     
+@pytest.mark.parametrize(("data", "message"), (
+    ({'gameId': 1}, "'cardIndex' must be sent as part of the request"),
+    ({'cardIndex': 1}, "'gameId' must be sent as part of the request")
+))
+def test_play_card_missing_data(auth_socket_client, data, message):
+    ack = auth_socket_client.emit('play_card', data, namespace="/game", callback=True)
 
-def test_play_card_missing_data(auth, app_client):
-    # test missing cardIndex
-    # test missing gameId
-    pass
+    assert ack == {'message': message}
 
-def test_play_card_not_player_turn(auth, app_client):
-    pass
+def test_play_card_game_not_exist(auth_socket_client):
+    data = {'cardIndex': 1, 'gameId': 5}
+    ack = auth_socket_client.emit('play_card', data, namespace="/game", callback=True)
 
-def test_play_card_is_player_turn(auth, app_client):
-    pass
+    assert ack['message'] == "could not find game with id '5'"
+
+def test_play_card_not_player_turn(auth_socket_client):
+    # Attempt to play a card on a game that has no players
+    data = {'cardIndex': 1, 'gameId': 1}
+    ack = auth_socket_client.emit('play_card', data, namespace="/game", callback=True)
+
+    assert ack == {'message': 'It is not your turn'}
+    
+    # Join the game but as player 2. Attempt to play a card
+    # when it is player one's turn
+    auth_socket_client.emit('join_game', {'gameId': 1, 'position': 2}, namespace="/game")
+    auth_socket_client.get_received('/game')
+
+    ack = auth_socket_client.emit('play_card', data, namespace="/game", callback=True)
+    assert ack == {'message': 'It is not your turn'}
+
+def test_play_card_is_player_turn(auth, flask_app, app_client):
+    auth.login('one', 'blah')
+    client1 = socketio.test_client(flask_app, namespace='/game', flask_test_client=app_client)
+    client1.emit('join_game', {'position': 1, 'gameId': 1}, namespace="/game")
+    playerOneInitial = client1.get_received('/game')
+    
+    auth.login('two', 'blah')
+    client2 = socketio.test_client(flask_app, namespace='/game', flask_test_client=app_client)
+    client2.emit('join_game', {'position': 2, 'gameId': 1}, namespace="/game")
+    client2.get_received('/game')
+    # clear out ready response sent to first client
+    client1.get_received('/game')
+
+    data = {'cardIndex': 1, 'gameId': 1}
+    client1.emit('play_card', data, namespace="/game")
+    received = client1.get_received('/game')
+
+    handData = received[0]['args'][0]
+    playedData = received[1]['args'][0]
+
+    # play one card and confirm hand is updated
+    handCopy = playerOneInitial[0]['args'][0]['hand'][:]
+    card = handCopy[1]
+    del handCopy[1] 
+    assert handData['hand'] == handCopy
+
+    # Confirm played pile for player is updated but opponenets is not
+    initialPlayed = playerOneInitial[0]['args'][0]['played']
+    assert initialPlayed[1] == {'red': [],'green': [],'blue': [],'white': [],'yellow': []}
+    assert initialPlayed[2] == {'red': [],'green': [],'blue': [],'white': [],'yellow': []}
+
+    playedPile = {'red': [],'green': [],'blue': [],'white': [],'yellow': []}
+    playedPile[card['typ']].append(card)
+    assert playedData['played'][1] == playedPile
+    # TODO figure out why list is coming back sorted
+    assert playedData['played'][2]['red'] == []
+    assert playedData['played'][2]['green'] == []
+    assert playedData['played'][2]['blue'] == []
+    assert playedData['played'][2]['white'] == []
+    assert playedData['played'][2]['yellow'] == []
 
 def test_discard_card_missing_data(auth, app_client):
     pass
