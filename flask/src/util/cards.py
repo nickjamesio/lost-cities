@@ -72,24 +72,23 @@ class Deck(CardStack):
         super(Deck, self).__init__(cards)
         if not cards:
             self.stack = [Card(color, value) for color in self.CARD_COLORS for value in self.CARD_VALUES]
+            self.shuffle()
 
     @property
     def draw_pile(self):
         return self.stack
 
     def deal_hand(self, position):
-        self.shuffle()
-
         # Dealing a hand for each player should work as if the cards were
         # being delt back and forth. This means player one gets every other
         # card and player two gets the first 8 since all the between cards
         # have already been removed
         if position == 1:
-            tmp_hand = self.stack[0:16:2]
-            self.stack = self.stack[1:17:2] + self.stack[16:]
+            tmp_hand = self.stack[-15::2]
+            self.stack = self.stack[0:-15] + self.stack[-16::2]
         else:
-            tmp_hand = self.stack[0:8]
-            self.stack = self.stack[8:]
+            tmp_hand = self.stack[-8:]
+            self.stack = self.stack[0:-9]
 
         hand = Hand()
         for card in tmp_hand:
@@ -128,13 +127,3 @@ class DiscardPile(GroupedStack):
 
 if __name__ == '__main__':
     pass
-    # cards = Cards()
-    # print(cards)
-    # print('Deck count: {}'.format(len(cards.deck)))
-    # cards.shuffle()
-    # print('Shuffled {}'.format(cards))
-    # print('Deck count: {}'.format(len(cards.deck)))
-    # cards.deal()
-    # print(cards)
-    # print('Deck count: {}'.format(len(cards.deck)))
-    

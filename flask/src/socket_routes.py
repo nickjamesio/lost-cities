@@ -130,6 +130,7 @@ def join_game(data):
         player.hand = deck.deal_hand(position).serialize()
         player.position = position
         player.user = current_user
+        game.draw_pile = deck.serialize()
         player.game = game
         player.save_to_db()
     elif player.user_id != current_user.id:
@@ -143,12 +144,16 @@ def join_game(data):
     opponent_position = (position % 2) + 1
     opponent = PlayerModel.query.with_parent(game).filter(PlayerModel.position == opponent_position).first()
 
+    # TODO send update_hand event and the rest in follow up event
+    # probably don't need the ready event
+    emit('updated_hand',
+        {'hand': player.hand}
+    )
     emit('game_joined',
         {
             'currentPlayer': game.current_player,
             'deck': game.draw_pile,
             'discard': game.discard_pile,
-            'hand': player.hand,
             'played': {
                 position: player.played,
                 opponent_position: opponent.played if opponent else {
@@ -159,13 +164,11 @@ def join_game(data):
                     'yellow': []
                 }
             },
+            'gameReady': True if PlayerModel.query.with_parent(game).count() == 2 else False,
             'over': game.is_over
-        }
+        },
+        room=game.id
     )
-    # Send both clients a message saying the game is ready to
-    # to be played now that there are 2 players
-    if PlayerModel.query.with_parent(game).count() == 2:
-        emit('game_ready', {'ready': True}, room=game.id)
 
 
 @socketio.on('play_card', namespace='/game')
@@ -265,9 +268,9 @@ def discard_card(data):
 @socketio.on('draw_card', namespace='/game')
 @authenticated_only
 def draw_card(data):
-    if 'cardIndex' not in data:
-        return {'message': "'cardIndex' must be sent as part of the request"}
-    
+    if 'gameId' not in data:
+        return {'message': "'gameId' must be sent as part of the request"}
+
     gameId = int(data['gameId'])
     game = GameModel.find_by_id(gameId)
     if not game:
@@ -290,38 +293,53 @@ def draw_card(data):
         )
         emit('card_drawn', {
                 'deck': game.draw_pile,
-                'currentPlayer': game.current_player
+                'currentPlayer': game.current_player,
+                'over': game.is_over
             },
             room=game.id
         )
 
-    return {'message': "It is currently player '{}' turn".format(game.current_player)}, 403
+    return {'message': "It is not your turn"}
 
 
 @socketio.on('draw_discard', namespace='/game')
 def draw_from_discard_pile(data):
+    if 'gameId' not in data:
+        return {'message': "'gameId' must be sent as part of the request"}
+    elif 'color' not in data:
+        return {'message': "'color' must be sent as part of the request"}
+    
     gameId = int(data['gameId'])
     color = data['color']
 
     game = GameModel.find_by_id(gameId)
+    if not game:
+        return {'message': "could not find game with id '{}'".format(data['gameId'])}
+
     player = PlayerModel.query.with_parent(game).filter(PlayerModel.position == game.current_player).first()
-    
-    discard = DiscardPile(game.discard_pile)
-    card = discard.get_card(color)
-    
-    hand = Hand(player.hand)
-    hand.add_card(card)
+    if player and player.user_id == current_user.id:
+        discard = DiscardPile(game.discard_pile)
+        card = discard.get_card(color)
+        
+        hand = Hand(player.hand)
+        hand.add_card(card)
 
-    game.discard_pile = discard.serialize()
-    player.hand = hand.serialize()
+        game.discard_pile = discard.serialize()
+        player.hand = hand.serialize()
 
-    player.save_to_db()
-    game.save_to_db()
-    emit('discard_draw',
-         {
-             'currentPlayer': game.current_player,
-             'hand': player.hand,
-             'discard': game.discard_pile
-         },
-         broadcast=True
-    )
+        player.save_to_db()
+        game.save_to_db()
+        
+        emit('updated_hand',
+            {'hand': hand.serialize()}
+        )
+        emit('discard_draw',
+            {
+                'currentPlayer': game.current_player,
+                'discard': game.discard_pile, 
+                'over': game.is_over
+            },
+            room=game.id
+        )
+    
+    return {'message': "It is not your turn"}

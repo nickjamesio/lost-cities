@@ -116,49 +116,53 @@ def test_join_game_new_player(auth, flask_app, app_client, app_context):
     client1.emit('join_game', data1, namespace="/game")
     received = client1.get_received('/game')
 
-    p1GameData = received[0]['args'][0]
+    p1Hand = received[0]['args'][0]
+    p1GameData = received[1]['args'][0]
     expectedData = game_data[0]
 
-    assert len(received) == 1
+    assert len(received) == 2
+    assert len(p1Hand['hand']) == 8
     assert p1GameData['currentPlayer'] == expectedData['current']
-    assert p1GameData['deck'] == expectedData['deck']
+    assert p1GameData['deck'] == (expectedData['deck'][0:-15] + expectedData['deck'][-16::2])
     assert p1GameData['over'] == expectedData['over']
     assert p1GameData['discard'] == {'red': [],
         'green': [],
         'blue': [],
         'white': [],
         'yellow': []}
-    assert 'hand' in p1GameData
     assert 'played' in p1GameData
+    assert p1GameData['gameReady'] == False
 
     client2.emit('join_game', data2, namespace="/game")
     received = client2.get_received('/game')
     
-    p2GameData = received[0]['args'][0]
+    p2Hand = received[0]['args'][0]
+    p2GameData = received[1]['args'][0]
+
     assert len(received) == 2
     assert p2GameData['currentPlayer'] == expectedData['current']
-    assert p2GameData['deck'] == expectedData['deck']
+    assert p2GameData['deck'] == expectedData['deck'][0:44]
     assert p2GameData['over'] == expectedData['over']
+    assert p2GameData['gameReady'] == True
     assert p2GameData['discard'] == {'red': [],
         'green': [],
         'blue': [],
         'white': [],
         'yellow': []}
-    assert 'discard' in p2GameData
     assert 'played' in p2GameData
-    assert 'hand' in p2GameData
 
-    assert 'ready' in received[1]['args'][0]
-    assert received[1]['args'][0]['ready'] == True
-
-    assert p1GameData['hand'] != p2GameData
+    assert p1Hand != p2Hand
     assert p1GameData['played'] == p2GameData['played']
-    assert p1GameData['deck'] == p2GameData['deck']
+    assert p1GameData['deck'] != p2GameData['deck'][0:44]
     assert p1GameData['discard'] == p2GameData['discard']
     
     received = client1.get_received('/game')
-    assert 'ready' in received[0]['args'][0]
-    assert received[0]['args'][0]['ready'] == True
+    p1GameData = received[0]['args'][0]
+
+    assert len(received) == 1
+    assert p1GameData['deck'] == p2GameData['deck']
+    assert p1GameData['gameReady'] == True
+    assert p1GameData['currentPlayer'] == expectedData['current']
     
 @pytest.mark.parametrize(("data", "message"), (
     ({'gameId': 1}, "'cardIndex' must be sent as part of the request"),
@@ -217,7 +221,7 @@ def test_play_card_is_player_turn(auth, flask_app, app_client):
     assert handData['hand'] == handCopy
 
     # Confirm played pile for player is updated but opponenets is not
-    initialPlayed = playerOneInitial[0]['args'][0]['played']
+    initialPlayed = playerOneInitial[1]['args'][0]['played']
     assert initialPlayed[1] == {'red': [],'green': [],'blue': [],'white': [],'yellow': []}
     assert initialPlayed[2] == {'red': [],'green': [],'blue': [],'white': [],'yellow': []}
 
@@ -275,14 +279,14 @@ def test_discard_card_is_player_turn(auth, flask_app, app_client):
     handData = received[0]['args'][0]
     discardData = received[1]['args'][0]
 
-    # confirm hand is updated after discard
+    # play one card and confirm hand is updated
     handCopy = playerOneInitial[0]['args'][0]['hand'][:]
     card = handCopy[1]
     del handCopy[1] 
     assert handData['hand'] == handCopy
 
     # Confirm discard pile and current player is updated
-    initialDiscard = playerOneInitial[0]['args'][0]['discard']
+    initialDiscard = playerOneInitial[1]['args'][0]['discard']
     assert initialDiscard == {'red': [],'green': [],'blue': [],'white': [],'yellow': []}
     
     discardPile = {'red': [],'green': [],'blue': [],'white': [],'yellow': []}
@@ -291,21 +295,78 @@ def test_discard_card_is_player_turn(auth, flask_app, app_client):
     assert discardData['currentPlayer'] == 2
 
 def test_draw_card_missing_data(auth_socket_client):
-    ack = auth_socket_client.emit('discard_card', {}, namespace="/game", callback=True)
+    ack = auth_socket_client.emit('draw_card', {}, namespace="/game", callback=True)
 
-    assert ack == {'message': "'cardIndex' must be sent as part of the request"}
+    assert ack == {'message': "'gameId' must be sent as part of the request"}
 
-def test_draw_card_not_player_turn(auth, app_client):
-    pass
+def test_draw_card_not_player_turn(auth_socket_client):
+    # Attempt to discard a card on a game that has no players
+    data = {'gameId': 1}
+    ack = auth_socket_client.emit('draw_card', data, namespace="/game", callback=True)
 
-def test_draw_card_is_player_turn(auth, app_client):
-    pass
+    assert ack == {'message': 'It is not your turn'}
+    
+    # Join the game but as player 2. Attempt to discard a card
+    # when it is player one's turn
+    auth_socket_client.emit('join_game', {'gameId': 1, 'position': 2}, namespace="/game")
+    auth_socket_client.get_received('/game')
 
-def test_discard_draw_missing_data(auth, app_client):
-    pass
+    ack = auth_socket_client.emit('draw_card', data, namespace="/game", callback=True)
+    assert ack == {'message': 'It is not your turn'}
+
+def test_draw_card_is_player_turn(auth, flask_app, app_client):
+    auth.login('one', 'blah')
+    client1 = socketio.test_client(flask_app, namespace='/game', flask_test_client=app_client)
+    client1.emit('join_game', {'position': 1, 'gameId': 1}, namespace="/game")
+    gameInitial = client1.get_received('/game')
+    
+    auth.login('two', 'blah')
+    client2 = socketio.test_client(flask_app, namespace='/game', flask_test_client=app_client)
+    client2.emit('join_game', {'position': 2, 'gameId': 1}, namespace="/game")
+    client2.get_received('/game')
+    # clear out ready response sent to first client
+    client1.get_received('/game')
+
+    client1.emit('draw_card', {'gameId': 1}, namespace="/game")
+    received = client1.get_received('/game')
+
+    newHand = received[0]['args'][0]['hand']
+    currentPlayer = received[1]['args'][0]['currentPlayer']
+    newDeck = received[1]['args'][0]['deck']
+
+    initialHand = gameInitial[0]['args'][0]['hand']
+    newCard = gameInitial[1]['args'][0]['deck'][0:44].pop()
+
+    # Count how many instances of the new card are in the player's hand
+    # to begin with. This is necessary because there are 3 multiplier
+    # cards in each color group
+    origOccurrences = initialHand.count(newCard)
+    newOccurrences = newHand.count(newCard)
+    
+    assert newOccurrences > origOccurrences
+    assert newDeck == game_data[0]['deck'][0:43]
+
+    received = client2.get_received('/game')
+    player2Data = received[0]['args'][0]
+
+    assert player2Data['deck'] == game_data[0]['deck'][0:43]
+    assert player2Data['currentPlayer'] == 2
+    assert player2Data['over'] == False
+
+@pytest.mark.parametrize(("data", "message"), (
+    ({'gameId': 1}, "'color' must be sent as part of the request"),
+    ({'color': 1}, "'gameId' must be sent as part of the request")
+))
+def test_discard_draw_missing_data(auth_socket_client, data, message):
+    ack = auth_socket_client.emit('draw_discard', data, namespace="/game", callback=True)
+
+    assert ack == {'message': message}
 
 def test_discard_draw_not_player_turn(auth, app_client):
     pass
 
 def test_discard_draw_is_player_turn(auth, app_client):
+    # Confirm hand is updated
+    # confirm discard pile is updated
+    # confirm current player is updated
     pass
