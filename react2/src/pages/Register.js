@@ -1,9 +1,9 @@
 import React from "react";
 
 import { useFormFields } from "../hooks/forms";
-import { login } from "../api/auth";
+import { register } from "../api/auth";
 
-function Login(props) {
+function Register(props) {
   const { fields, handleChange } = useFormFields({
       username: "",
       password: ""
@@ -11,12 +11,12 @@ function Login(props) {
 
   const submit = (event) => {
     event.preventDefault();
-    const result = login(fields.username, fields.password);
+    const result = register(fields.username, fields.password);
   }
 
   return (
     <>
-      <h1>Log in</h1>
+      <h1>Register</h1>
       <form onSubmit={submit}>
         <label>Username</label>
         <input
@@ -40,4 +40,4 @@ function Login(props) {
   );
 }
 
-export default Login;
+export default Register;

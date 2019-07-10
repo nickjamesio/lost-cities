@@ -1,15 +1,13 @@
 import React from 'react';
 import Login from './pages/Login'
+import Register from './pages/Register'
 import { Router, Link } from "@reach/router";
 
 function App() {
   return (
     <div className="App">
-      <header>
-        Learn React
-      </header>
-
       <Router>
+        <Register path="register"/>
         <Login path="login"/>
       </Router>
     </div>
