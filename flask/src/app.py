@@ -9,6 +9,7 @@ from src.db import db
 from src.config import Config
 from src.resources.home import Home
 from src.resources.user import (
+    CurrentUser,
     UserRegister,
     User,
     UserList,
@@ -27,7 +28,7 @@ jwt = JWTManager(app)
 # if app.env == 'production':
 #     CORS(app, origins=["https://DOMAIN.com", "https://www.DOMAIN.com"])
 # else:
-CORS(app, origins=["http://api.localhost", "http://nickjames.local"], supports_credentials=True)
+CORS(app, origins=["http://lostcities.local:3000"], supports_credentials=True)
 
 import src.socket_routes
 from src.models import user, player
@@ -90,6 +91,7 @@ def output_json(data, code, headers=None):
 
 # Routes
 api.add_resource(Home, '/')
+api.add_resource(CurrentUser, '/me')
 api.add_resource(UserRegister, '/register')
 api.add_resource(User, '/user/<int:uid>')
 api.add_resource(UserList, '/users')

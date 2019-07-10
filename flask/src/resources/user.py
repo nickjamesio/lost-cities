@@ -8,7 +8,9 @@ from flask_jwt_extended import (
     get_jwt_identity,
     set_access_cookies,
     set_refresh_cookies,
-    unset_jwt_cookies
+    unset_jwt_cookies,
+    jwt_required,
+    current_user
 )
 
 _user_parser = reqparse.RequestParser()
@@ -35,6 +37,12 @@ class UserRegister(Resource):
         user.save_to_db()
 
         return {"message": "User created successfully."}, 201
+
+
+class CurrentUser(Resource):
+    @jwt_required
+    def get(self):
+        return current_user.json()
 
 
 class User(Resource):
