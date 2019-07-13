@@ -1,7 +1,7 @@
-const URL = "http://lostcities.local";
+const URL = "http://lostcities.local:5000";
 
 async function login(username, password) {
-  const response = await fetch("http://localhost:5000/login", {
+  const response = await fetch(`${URL}/login`, {
     method: "post",
     headers: {
       "Content-type": "application/json"
@@ -17,7 +17,7 @@ async function login(username, password) {
 }
 
 async function register(username, password) {
-    const response = await fetch("http://localhost:5000/register", {
+    const response = await fetch(`${URL}/register`, {
       method: "post",
       headers: {
         "Content-type": "application/json"

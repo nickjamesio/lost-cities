@@ -90,6 +90,13 @@ class UserLogin(Resource):
         return {'message': 'Invalid credentials'}, 401
 
 
+class UserLogout(Resource):
+    @jwt_required
+    def post(self):
+        resp = jsonify({'login': True})
+        unset_jwt_cookies(resp)
+        return resp, 200
+
 class TokenRefresh(Resource):
     @jwt_refresh_token_required
     def post(self):

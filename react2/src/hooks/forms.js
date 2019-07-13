@@ -11,10 +11,10 @@ const useFormFields = (defaultVals) => {
     ));
   };
 
-  return {
+  return [
     fields,
     handleChange
-  };
+  ];
 };
 
 export { useFormFields };

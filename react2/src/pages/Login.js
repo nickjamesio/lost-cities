@@ -2,14 +2,13 @@ import React from "react";
 import Avatar from "@material-ui/core/Avatar";
 import Button from "@material-ui/core/Button";
 import TextField from "@material-ui/core/TextField";
-import FormControlLabel from "@material-ui/core/FormControlLabel";
-import Checkbox from "@material-ui/core/Checkbox";
 import Link from "@material-ui/core/Link";
 import Grid from "@material-ui/core/Grid";
 import LockOutlinedIcon from "@material-ui/icons/LockOutlined";
 import Typography from "@material-ui/core/Typography";
 import { makeStyles } from "@material-ui/core/styles";
 import Container from "@material-ui/core/Container";
+import { Link as RouterLink } from "@reach/router";
 
 import { useFormFields } from "../hooks/forms";
 import { login } from "../api/auth";
@@ -41,14 +40,14 @@ const useStyles = makeStyles(theme => ({
 
 function Login(props) {
   const classes = useStyles();
-  const { fields, handleChange } = useFormFields({
+  const [ form, handleChange ] = useFormFields({
     email: "",
     password: ""
   });
 
   const submit = event => {
     event.preventDefault();
-    const result = login(fields.username, fields.password);
+    const result = login(form.username, form.password);
   };
 
   return (
@@ -71,7 +70,7 @@ function Login(props) {
             name="email"
             autoComplete="email"
             autoFocus
-            value={fields.email}
+            value={form.email}
             onChange={handleChange}
           />
           <TextField
@@ -84,7 +83,7 @@ function Login(props) {
             type="password"
             id="password"
             autoComplete="current-password"
-            value={fields.password}
+            value={form.password}
             onChange={handleChange}
           />
           {/* <FormControlLabel
@@ -107,7 +106,7 @@ function Login(props) {
               </Link>
             </Grid>
             <Grid item>
-              <Link href="#" variant="body2">
+              <Link to="/signup" variant="body2" component={RouterLink}>
                 {"Don't have an account? Sign Up"}
               </Link>
             </Grid>
