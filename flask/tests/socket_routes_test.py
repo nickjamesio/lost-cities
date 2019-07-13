@@ -362,11 +362,57 @@ def test_discard_draw_missing_data(auth_socket_client, data, message):
 
     assert ack == {'message': message}
 
-def test_discard_draw_not_player_turn(auth, app_client):
-    pass
+def test_discard_draw_not_player_turn(auth_socket_client):
+    # Attempt to draw a card from discard on a game that has no players
+    data = {'gameId': 1, 'color': 'green'}
+    ack = auth_socket_client.emit('draw_discard', data, namespace="/game", callback=True)
 
-def test_discard_draw_is_player_turn(auth, app_client):
-    # Confirm hand is updated
-    # confirm discard pile is updated
-    # confirm current player is updated
-    pass
+    assert ack == {'message': 'It is not your turn'}
+    
+    # Join the game but as player 2. Attempt to draw from discard pile
+    # when it is player one's turn
+    auth_socket_client.emit('join_game', {'gameId': 1, 'position': 2}, namespace="/game")
+    auth_socket_client.get_received('/game')
+
+    ack = auth_socket_client.emit('draw_discard', data, namespace="/game", callback=True)
+    assert ack == {'message': 'It is not your turn'}
+
+def test_discard_draw_is_player_turn(auth, flask_app, app_client):
+    auth.login('one', 'blah')
+    client1 = socketio.test_client(flask_app, namespace='/game', flask_test_client=app_client)
+    client1.emit('join_game', {'position': 1, 'gameId': 1}, namespace="/game")
+    playerOneInitial = client1.get_received('/game')
+    
+    auth.login('two', 'blah')
+    client2 = socketio.test_client(flask_app, namespace='/game', flask_test_client=app_client)
+    client2.emit('join_game', {'position': 2, 'gameId': 1}, namespace="/game")
+    playerTwoInitial = client2.get_received('/game')
+
+    # player discard a card and then draw a card. needed to
+    # switch currentPlayer to player 2
+    client1.emit('discard_card', {'cardIndex': 1, 'gameId': 1}, namespace="/game")
+    client1.emit('draw_card', {'gameId': 1}, namespace="/game")
+    
+    # clear out all received data from player 1
+    client1.get_received('/game')
+    
+    # player two play a card and then draw from discard pile
+    client2.emit('play_card', {'cardIndex': 0, 'gameId': 1}, namespace="/game")
+    client2.get_received('/game')
+
+    discardedCard = playerOneInitial[0]['args'][0]['hand'][1]
+    client2.emit('draw_discard', {'color': discardedCard['typ'], 'gameId': 1}, namespace="/game")
+    received = client2.get_received('/game')
+
+    playerTwoInitialHand = playerTwoInitial[0]['args'][0]['hand']
+    origCount = playerTwoInitialHand.count(discardedCard)
+    
+    playerTwoNewHand = received[0]['args'][0]['hand']
+    newCount = playerTwoNewHand.count(discardedCard)
+    
+    assert newCount > origCount
+
+    discardPile = {'red': [],'green': [],'blue': [],'white': [],'yellow': []}
+    playerTwoUpdatedGame = received[1]['args'][0]
+    assert playerTwoUpdatedGame['discard'] == discardPile
+    assert playerTwoUpdatedGame['currentPlayer'] == 1

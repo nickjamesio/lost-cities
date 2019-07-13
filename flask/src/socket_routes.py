@@ -303,6 +303,7 @@ def draw_card(data):
 
 
 @socketio.on('draw_discard', namespace='/game')
+@authenticated_only
 def draw_from_discard_pile(data):
     if 'gameId' not in data:
         return {'message': "'gameId' must be sent as part of the request"}
@@ -319,13 +320,15 @@ def draw_from_discard_pile(data):
     player = PlayerModel.query.with_parent(game).filter(PlayerModel.position == game.current_player).first()
     if player and player.user_id == current_user.id:
         discard = DiscardPile(game.discard_pile)
+        # TODO should check to see if card is None
         card = discard.get_card(color)
         
         hand = Hand(player.hand)
         hand.add_card(card)
+        player.hand = hand.serialize()
 
         game.discard_pile = discard.serialize()
-        player.hand = hand.serialize()
+        game.current_player = (game.current_player % 2) + 1
 
         player.save_to_db()
         game.save_to_db()

@@ -33,7 +33,10 @@ class CardStack:
         """
         Used to draw top card
         """
-        return self.stack.pop()
+        if self.stack:
+            return self.stack.pop()
+        
+        return None
 
     def append(self, card):
         self.stack.append(card)
