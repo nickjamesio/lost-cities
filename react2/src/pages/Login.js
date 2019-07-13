@@ -11,7 +11,8 @@ import Container from "@material-ui/core/Container";
 import { Link as RouterLink } from "@reach/router";
 
 import { useFormFields } from "../hooks/forms";
-import { login } from "../api/auth";
+import { login } from "../util/auth";
+import { useAuth } from "../context/AuthContext";
 
 const useStyles = makeStyles(theme => ({
   "@global": {
@@ -40,14 +41,19 @@ const useStyles = makeStyles(theme => ({
 
 function Login(props) {
   const classes = useStyles();
+  const { setUser } = useAuth();
   const [ form, handleChange ] = useFormFields({
-    email: "",
+    username: "",
     password: ""
   });
 
-  const submit = event => {
+  const submit = async event => {
     event.preventDefault();
-    const result = login(form.username, form.password);
+    const result = await login(form);
+    if (result.code == 200) {
+        setUser(result.data.user);
+    } 
+    console.log(result);
   };
 
   return (
@@ -65,10 +71,10 @@ function Login(props) {
             margin="normal"
             required
             fullWidth
-            id="email"
-            label="Email Address"
-            name="email"
-            autoComplete="email"
+            id="username"
+            label="Username or Email"
+            name="username"
+            autoComplete="username"
             autoFocus
             value={form.email}
             onChange={handleChange}

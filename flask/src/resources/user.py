@@ -13,25 +13,32 @@ from flask_jwt_extended import (
     current_user
 )
 
-_user_parser = reqparse.RequestParser()
-_user_parser.add_argument('username',
-                          type=str,
-                          required=True,
-                          help="This field cannot be blank."
-                          )
-_user_parser.add_argument('password',
-                          type=str,
-                          required=True,
-                          help="This field cannot be blank."
-                          )
-
 
 class UserRegister(Resource):
+    user_parser = reqparse.RequestParser()
+    user_parser.add_argument('username',
+                            type=str,
+                            required=True,
+                            help="This field cannot be blank."
+                            )
+    user_parser.add_argument('email',
+                            type=str,
+                            required=True,
+                            help="This field cannot be blank."
+                            )
+    user_parser.add_argument('password',
+                            type=str,
+                            required=True,
+                            help="This field cannot be blank."
+                            )
     def post(self):
-        data = _user_parser.parse_args()
+        data = self.user_parser.parse_args()
 
-        if UserModel.find_by_username(data['username']):
-            return {"message": "A user with that username already exists"}, 400
+        if UserModel.find_by_username(data['email']):
+            return {"message": "Email already in use"}, 400
+
+        if UserModel.find_by_email(data['username']):
+            return {"message": "Username taken"}, 400
 
         user = UserModel(**data)
         user.save_to_db()
@@ -70,18 +77,31 @@ class UserList(Resource):
 
 
 class UserLogin(Resource):
+    user_parser = reqparse.RequestParser()
+    user_parser.add_argument('username',
+                            type=str,
+                            required=True,
+                            help="This field cannot be blank."
+                            )
+    user_parser.add_argument('password',
+                            type=str,
+                            required=True,
+                            help="This field cannot be blank."
+                            )
     @classmethod
     def post(self):
-        data = _user_parser.parse_args()
+        data = self.user_parser.parse_args()
 
         user = UserModel.find_by_username(data['username'])
+        if not user:
+            user = UserModel.find_by_email(data['username'])
 
         if user and user.password == data['password']:
             access_token = create_access_token(identity=user.id, fresh=True)
             refresh_token = create_refresh_token(user.id)
             
             # Set the JWT cookies in the response
-            resp = jsonify({'login': True})
+            resp = jsonify({'user': user.json()})
             set_access_cookies(resp, access_token)
             set_refresh_cookies(resp, refresh_token)
 

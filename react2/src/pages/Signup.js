@@ -8,10 +8,10 @@ import LockOutlinedIcon from "@material-ui/icons/LockOutlined";
 import Typography from "@material-ui/core/Typography";
 import { makeStyles } from "@material-ui/core/styles";
 import Container from "@material-ui/core/Container";
-import { Link as RouterLink } from "@reach/router";
+import { Link as RouterLink, navigate } from "@reach/router";
 
 import { useFormFields } from "../hooks/forms";
-import { register } from "../api/auth";
+import { register } from "../util/auth";
 
 const useStyles = makeStyles(theme => ({
   "@global": {
@@ -41,16 +41,19 @@ const useStyles = makeStyles(theme => ({
 function SignUp() {
   const classes = useStyles();
   const [form, handleChange] = useFormFields({
+    username: "",
     email: "",
-    firstName: "",
-    lastName: "",
     password: "",
     passwordConfirm: ""
   });
 
-  const submit = event => {
+  const submit = async event => {
     event.preventDefault();
-    const result = register(form.username, form.password);
+    const result = await register(form);
+    if (result.code === 201) {
+      navigate('/login')
+    }
+    console.log(result);
   };
 
   return (
@@ -62,29 +65,19 @@ function SignUp() {
         <Typography component="h1" variant="h5">
           Sign up
         </Typography>
-        <form className={classes.form} noValidate>
+        <form className={classes.form} onSubmit={submit}>
           <Grid container spacing={2}>
-            <Grid item xs={12} sm={6}>
-              <TextField
-                autoComplete="fname"
-                name="firstName"
-                variant="outlined"
-                required
-                fullWidth
-                id="firstName"
-                label="First Name"
-                autoFocus
-              />
-            </Grid>
-            <Grid item xs={12} sm={6}>
+            <Grid item xs={12}>
               <TextField
                 variant="outlined"
                 required
                 fullWidth
-                id="lastName"
-                label="Last Name"
-                name="lastName"
-                autoComplete="lname"
+                id="username"
+                label="Username"
+                name="username"
+                autoComplete="username"
+                value={form.username}
+                onChange={handleChange}
               />
             </Grid>
             <Grid item xs={12}>
@@ -93,9 +86,11 @@ function SignUp() {
                 required
                 fullWidth
                 id="email"
-                label="Email Address"
+                label="Email"
                 name="email"
                 autoComplete="email"
+                value={form.email}
+                onChange={handleChange}
               />
             </Grid>
             <Grid item xs={12}>
@@ -107,6 +102,8 @@ function SignUp() {
                 label="Password"
                 type="password"
                 id="password"
+                value={form.password}
+                onChange={handleChange}
               />
             </Grid>
             <Grid item xs={12}>
@@ -118,6 +115,8 @@ function SignUp() {
                 label="Confirm Password"
                 type="password"
                 id="passwordConfirm"
+                value={form.passwordConfirm}
+                onChange={handleChange}
               />
             </Grid>
           </Grid>
