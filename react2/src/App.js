@@ -1,6 +1,7 @@
 import React, { useEffect } from "react";
 import CssBaseline from "@material-ui/core/CssBaseline";
 
+import CustomTheme from "./theme";
 import { useAuth } from "./context/AuthContext";
 import { me } from "./util/auth";
 import AuthenticatedApp from "./authenticated-app";
@@ -17,13 +18,13 @@ function App() {
       }
     }
     fetchData();
-  }, [user]);
+  }, [setUser]);
 
   return (
-    <div className="App">
+    <CustomTheme>
       <CssBaseline />
       {user ? <AuthenticatedApp /> : <UnauthenticatedApp />}
-    </div>
+    </CustomTheme>
   );
 }
 

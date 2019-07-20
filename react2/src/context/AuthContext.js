@@ -1,6 +1,6 @@
-import React, { useState, useEffect, useContext, createContext } from "react";
+import React, { useState, useContext, createContext } from "react";
 
-import { login, register, me, logout } from "../util/auth";
+// import { login, register, me, logout } from "../util/auth";
 
 const AuthContext = createContext();
 

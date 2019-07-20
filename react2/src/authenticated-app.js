@@ -1,12 +1,16 @@
 import React from "react";
-import { Router } from "@reach/router";
 
-import Signup from "./pages/Signup";
-import Login from "./pages/Login";
+import PageLayout from "./components/PageLayout";
+import Game from "./pages/Game";
+import { Router } from "@reach/router";
 
 function UnauthenticatedApp(props) {
   return (
-    <p>Authenticated!</p>
+    <PageLayout>
+      <Router>
+        <Game path="/" />
+      </Router>
+    </PageLayout>
   );
 }
 

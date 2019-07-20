@@ -50,7 +50,7 @@ function Login(props) {
   const submit = async event => {
     event.preventDefault();
     const result = await login(form);
-    if (result.code == 200) {
+    if (result.code === 200) {
         setUser(result.data.user);
     } 
     console.log(result);
@@ -112,7 +112,7 @@ function Login(props) {
               </Link>
             </Grid>
             <Grid item>
-              <Link to="/signup" variant="body2" component={RouterLink}>
+              <Link to="/" variant="body2" component={RouterLink}>
                 {"Don't have an account? Sign Up"}
               </Link>
             </Grid>

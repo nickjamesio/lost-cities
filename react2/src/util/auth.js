@@ -33,6 +33,15 @@ async function register(form) {
   return { code: response.status, data };
 }
 
+async function logout() {
+  const response = await fetch(`${URL}/logout`, {
+    method: "get",
+    credentials: "include",
+  });
+  const data = await response.json();
+  return { code: response.status, data };
+}
+
 async function me(form) {
   const response = await fetch(`${URL}/me`, {
     method: "get",
@@ -42,4 +51,4 @@ async function me(form) {
   return { code: response.status, data };    
 }
 
-export { login, register, me };
+export { login, logout, register, me };
