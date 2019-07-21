@@ -3,12 +3,9 @@ import { makeStyles } from "@material-ui/core";
 import { Grid } from "@material-ui/core";
 
 import Background from "../images/background.png";
-import YellowDiscard from "../images/yellow_discard.png";
-import BlueDiscard from "../images/blue_discard.png";
-import WhiteDiscard from "../images/white_discard.png";
-import GreenDiscard from "../images/green_discard.png";
-import RedDiscard from "../images/red_discard.png";
 import Card from "../components/Card";
+import DiscardPile from "../components/DiscardPile";
+import { useGameState, useGameSocket } from "../context/GameContext";
 
 const useStyles = makeStyles(theme => ({
   root: {
@@ -32,15 +29,14 @@ const useStyles = makeStyles(theme => ({
   discardContainer: {
     height: "250px"
   },
-  discardItem: {
-    display: "flex",
-    justifyContent: "center",
-    alignItems: "center",
-    position: "relative",
-    height: "100%",
+  discardWrapper: {
     "&:not(:last-child)": {
       paddingRight: "4rem"
-    },
+    }
+  },
+  cardWrapper: {
+    position: "absolute",
+    zIndex: "1"
   },
   discardItemImage: {
     height: "100%"
@@ -48,10 +44,15 @@ const useStyles = makeStyles(theme => ({
 }));
 
 export default function Game(props) {
+  const { id: gameId } = props;
   const classes = useStyles();
+  const { state } = useGameState();
+  const { socket } = useGameSocket();
 
   return (
-    <section className={classes.root}>
+    <section
+      className={classes.root}
+    >
       <Grid container className={classes.columns}>
         <Grid item xs={4} className={classes.hand} />
         <Grid
@@ -69,22 +70,15 @@ export default function Game(props) {
             justify="center"
             alignItems="center"
           >
-            <Grid item className={classes.discardItem}>
-              <img src={YellowDiscard} className={classes.discardItemImage} />
-              <Card color="green" value={5} />
-            </Grid>
-            <Grid item className={classes.discardItem}>
-              <img src={BlueDiscard} className={classes.discardItemImage} />
-            </Grid>
-            <Grid item className={classes.discardItem}>
-              <img src={WhiteDiscard} className={classes.discardItemImage} />
-            </Grid>
-            <Grid item className={classes.discardItem}>
-              <img src={GreenDiscard} className={classes.discardItemImage} />
-            </Grid>
-            <Grid item className={classes.discardItem}>
-              <img src={RedDiscard} className={classes.discardItemImage} />
-            </Grid>
+            {["yellow", "blue", "white", "green", "red"].map(color => (
+              <div key={color} className={classes.discardWrapper}>
+                <DiscardPile color={color}>
+                  <div className={classes.cardWrapper}>
+                    <Card color={color} value={5} />
+                  </div>
+                </DiscardPile>
+              </div>
+            ))}
           </Grid>
         </Grid>
       </Grid>

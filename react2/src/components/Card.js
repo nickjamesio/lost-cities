@@ -17,8 +17,6 @@ const useStyles = makeStyles(theme => ({
     height: "200px",
     backgroundColor: "black",
     padding: "0.5rem",
-    position: "absolute",
-    zIndex: "1",
   },
   img: {
     height: "calc(100% - 1.4rem)"
@@ -48,6 +46,7 @@ function Card(props) {
       break;
     case "yellow":
       imgSrc = YellowCard;
+      break;
     case "green":
       imgSrc = GreenCard;
       break;
@@ -64,7 +63,7 @@ function Card(props) {
         <span>{value}</span>
         <span>{value}</span>
       </div>
-     <img src={imgSrc} className={classes.img} />
+     <img src={imgSrc} className={classes.img} alt={`${color} card`} />
     </div>
   );
 }

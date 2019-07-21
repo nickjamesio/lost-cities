@@ -13,7 +13,7 @@ import { Link } from "@material-ui/core";
 import AccountCircle from "@material-ui/icons/AccountCircle";
 import MoreIcon from "@material-ui/icons/MoreVert";
 
-import { Link as RouterLink } from "@reach/router";
+import { Link as RouterLink, navigate } from "@reach/router";
 import { useAuth } from "../context/AuthContext";
 import { logout } from "../util/auth";
 
@@ -83,9 +83,10 @@ export default function GameAppBar() {
   }
 
   function handleLogout(event) {
-    logout();
     setUser(null);
     handleMenuClose();
+    logout();
+    navigate('/');
   }
 
   const menuId = "account-menu";

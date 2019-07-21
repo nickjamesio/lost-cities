@@ -1,4 +1,4 @@
-const URL = "http://localhost:5000";
+const URL = process.env.NODE_ENV === 'production' ? process.env.REACT_APP_PROD_API : process.env.REACT_APP_DEV_API;
 
 async function login(form) {
   const response = await fetch(`${URL}/login`, {

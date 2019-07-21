@@ -112,7 +112,7 @@ function Login(props) {
               </Link>
             </Grid>
             <Grid item>
-              <Link to="/" variant="body2" component={RouterLink}>
+              <Link to="/signup" variant="body2" component={RouterLink}>
                 {"Don't have an account? Sign Up"}
               </Link>
             </Grid>

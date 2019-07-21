@@ -1,17 +1,19 @@
 import React from "react";
+import { Router } from "@reach/router";
 
 import PageLayout from "./components/PageLayout";
 import Game from "./pages/Game";
-import { Router } from "@reach/router";
+import ManageGame from "./pages/ManageGame";
 
-function UnauthenticatedApp(props) {
+function AuthenticatedApp(props) {
   return (
     <PageLayout>
       <Router>
-        <Game path="/" />
+        <ManageGame path="/" />
+        <Game path="/game/:id" />
       </Router>
     </PageLayout>
   );
 }
 
-export default UnauthenticatedApp;
+export default AuthenticatedApp;

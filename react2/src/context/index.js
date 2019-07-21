@@ -1,12 +1,13 @@
-import React from 'react'
-import {AuthProvider} from './AuthContext'
+import React from "react";
+import { AuthProvider } from "./AuthContext";
+import { GameProvider } from "../context/GameContext";
 
-function AppProviders({children}) {
+function AppProviders({ children }) {
   return (
     <AuthProvider>
-      {children}
+      <GameProvider>{children}</GameProvider>
     </AuthProvider>
-  )
+  );
 }
 
-export default AppProviders
+export default AppProviders;

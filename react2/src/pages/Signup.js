@@ -51,7 +51,7 @@ function SignUp() {
     event.preventDefault();
     const result = await register(form);
     if (result.code === 201) {
-      navigate('/login')
+      navigate('/')
     }
     console.log(result);
   };
@@ -131,7 +131,7 @@ function SignUp() {
           </Button>
           <Grid container justify="flex-end">
             <Grid item>
-              <Link to="/login" variant="body2" component={RouterLink}>
+              <Link to="/" variant="body2" component={RouterLink}>
                 Already have an account? Sign in
               </Link>
             </Grid>
