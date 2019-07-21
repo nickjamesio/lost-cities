@@ -144,13 +144,14 @@ def join_game(data):
     opponent_position = (position % 2) + 1
     opponent = PlayerModel.query.with_parent(game).filter(PlayerModel.position == opponent_position).first()
 
-    # TODO send update_hand event and the rest in follow up event
-    # probably don't need the ready event
+    # Emit hand update separately so only the client that sent the request is sent
+    # the updated hand. We do not want every person in the game to know about our hand
     emit('updated_hand',
         {'hand': player.hand}
     )
     emit('game_joined',
         {
+            'position': player.position,
             'currentPlayer': game.current_player,
             'deck': game.draw_pile,
             'discard': game.discard_pile,

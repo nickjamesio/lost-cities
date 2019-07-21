@@ -112,8 +112,8 @@ class UserLogin(Resource):
 
 class UserLogout(Resource):
     @jwt_required
-    def post(self):
-        resp = jsonify({'login': True})
+    def get(self):
+        resp = jsonify({'logout': True})
         unset_jwt_cookies(resp)
         return resp, 200
 

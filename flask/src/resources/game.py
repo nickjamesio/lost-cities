@@ -1,80 +1,58 @@
 from flask_restful import Resource, request, reqparse
+from src.models.game import GameModel
+from src.models.player import PlayerModel
+from flask_jwt_extended import (
+    jwt_required,
+    current_user,
+    get_jwt_identity
+)
 
-class Game(Resource):
-    def get(self, pid):
-        pass
+class MyGame(Resource):
+    @jwt_required
+    def get(self, gid):
+        game = GameModel.find_by_id(gid)
+        if not game:
+            return {'message': 'Game not found'}, 404
+
+        # Check if current user is a player in the game
+        # There are only two players so no need to perform
+        # another database query
+        player = None
+        opponent = None
+        for p in game.players:
+            if p.user_id == current_user.id:
+                player = p
+            else:
+                opponent = p
+            
+        if not player:
+            return {'message': 'You are not a player in the requested game'}, 401
+        
+        opponent_position = (player.position % 2) + 1
+        return {
+            'hand': player.hand,
+            'position': player.position,
+            'currentPlayer': game.current_player,
+            'deck': game.draw_pile,
+            'discard': game.discard_pile,
+            'played': {
+                player.position: player.played,
+                opponent_position: opponent.played if opponent else {
+                    'red': [],
+                    'green': [],
+                    'blue': [],
+                    'white': [],
+                    'yellow': []
+                }
+            },
+            'gameReady': True if len(game.players) == 2 else False,
+            'over': game.is_over
+        }
+
 
 class GameList(Resource):
-    parser = reqparse.RequestParser()
-    parser.add_argument('player',
-                        type=int,
-                        # required=True,
-                        help="This field cannot be left blank!"
-                        )
-    # parser.add_argument('description',
-    #                     type=str,
-    #                     required=True,
-    #                     help="This field cannot be left blank!"
-    #                     )
-    # parser.add_argument('person',
-    #                     type=str,
-    #                     required=True,
-    #                     help="This field cannot be left blank!"
-    #                     )
-    # parser.add_argument('colors',
-    #                     type=str,
-    #                     action='append',
-    #                     required=True,
-    #                     help="This field cannot be left blank!"
-    #                     )
-    # parser.add_argument('product_type',
-    #                     type=str,
-    #                     required=True,
-    #                     help="This field cannot be left blank!"
-    #                     )
-    # parser.add_argument('price',
-    #                     type=float,
-    #                     required=True,
-    #                     help="This field cannot be left blank!"
-    #                     )
-    playerOne = {
-        'name': 'Nick',
-        'hand': [],
-        'played': {
-            'red': [],
-            'green': [],
-            'blue': [],
-            'white': [],
-            'yellow': []
-        },
-        'score': 17
-    }
-
-    playerTwo = {
-        'name': 'Dad',
-        'hand': [],
-        'played': {
-            'red': [],
-            'green': [],
-            'blue': [],
-            'white': [],
-            'yellow': []
-        },
-        'score': 45
-    }
-
-    drawPile = []
-
-    discardPile = {
-        'red': [],
-        'green': [],
-        'blue': [],
-        'white': [],
-        'yellow': []
-    }
-
     def post(self):
-        data = self.parser.parse_args()
+      pass
         # cards = Cards()
         # cards.shuffle()
         # cards.deal()

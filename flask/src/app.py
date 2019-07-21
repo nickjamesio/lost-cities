@@ -8,12 +8,14 @@ from flask_jwt_extended import JWTManager
 from src.db import db
 from src.config import Config
 from src.resources.home import Home
+from src.resources.game import MyGame
 from src.resources.user import (
     CurrentUser,
     UserRegister,
     User,
     UserList,
     UserLogin,
+    UserLogout,
     TokenRefresh
 )
 
@@ -91,11 +93,13 @@ def output_json(data, code, headers=None):
 
 # Routes
 api.add_resource(Home, '/')
+api.add_resource(MyGame, '/mygame/<int:gid>')
 api.add_resource(CurrentUser, '/me')
 api.add_resource(UserRegister, '/register')
 api.add_resource(User, '/user/<int:uid>')
 api.add_resource(UserList, '/users')
 api.add_resource(UserLogin, '/login')
+api.add_resource(UserLogout, '/logout')
 api.add_resource(TokenRefresh, '/refresh')
 
 @app.before_first_request
