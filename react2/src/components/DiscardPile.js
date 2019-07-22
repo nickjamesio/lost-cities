@@ -14,7 +14,7 @@ const useStyles = makeStyles(theme => ({
     justifyContent: "center",
     alignItems: "center",
     position: "relative",
-    height: "100%",
+    width: "100%",
   },
   discardItemImage: {
     height: "100%"

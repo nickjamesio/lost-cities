@@ -6,7 +6,6 @@ import IconButton from "@material-ui/core/IconButton";
 import Typography from "@material-ui/core/Typography";
 import MenuItem from "@material-ui/core/MenuItem";
 import Menu from "@material-ui/core/Menu";
-import MenuIcon from "@material-ui/icons/Menu";
 import Games from "@material-ui/icons/Extension";
 import ShowChart from "@material-ui/icons/ShowChart";
 import { Link } from "@material-ui/core";

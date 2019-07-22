@@ -7,11 +7,7 @@ import {
   GAME_CREATED
 } from "./context/GameContext";
 import { navigate } from "@reach/router";
-
-const URL =
-  process.env.NODE_ENV === "production"
-    ? process.env.REACT_APP_PROD_API
-    : process.env.REACT_APP_DEV_API;
+import { URL } from "./constants";
 
 function configureSocket(dispatch) {
   const socket = io(`${URL}/game`);
@@ -30,8 +26,8 @@ function configureSocket(dispatch) {
   // the different actions that our socket/client will emit
   // is catched by these listeners
   socket.on("game_created", data => {
-    navigate(`/game/${data.gameId}`);
     dispatch({ type: GAME_CREATED, data });
+    navigate(`/game/${data.gameId}`);
   });
   socket.on("GUESS_WHO_PITCHED_IN", name => {
     dispatch({ type: "PICTHED_IN", name });

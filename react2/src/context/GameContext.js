@@ -51,13 +51,21 @@ function reducer(state, action) {
 
 export function GameProvider({ children }) {
   const [state, dispatch] = useReducer(reducer, {
-    gameId: null
+    gameId: null,
+    hand: [],
+    played: {},
+    deck: [],
+    discard: []
   });
   const [socket, setSocket] = useState(null);
 
   useEffect(() => {
     setSocket(configureSocket(dispatch));
-    return () => socket.disconnect();
+    // return () => {
+    //   if (socket) {
+    //     socket.disconnect();
+    //   }
+    // };
   }, [dispatch]);
 
   return (

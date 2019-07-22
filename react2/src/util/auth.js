@@ -1,6 +1,6 @@
-const URL = process.env.NODE_ENV === 'production' ? process.env.REACT_APP_PROD_API : process.env.REACT_APP_DEV_API;
+import { URL } from "../constants";
 
-async function login(form) {
+export async function login(form) {
   const response = await fetch(`${URL}/login`, {
     method: "post",
     headers: {
@@ -16,7 +16,7 @@ async function login(form) {
   return { code: response.status, data };
 }
 
-async function register(form) {
+export async function register(form) {
   const response = await fetch(`${URL}/register`, {
     method: "post",
     headers: {
@@ -33,22 +33,20 @@ async function register(form) {
   return { code: response.status, data };
 }
 
-async function logout() {
+export async function logout() {
   const response = await fetch(`${URL}/logout`, {
     method: "get",
-    credentials: "include",
+    credentials: "include"
   });
   const data = await response.json();
   return { code: response.status, data };
 }
 
-async function me(form) {
+export async function me(form) {
   const response = await fetch(`${URL}/me`, {
     method: "get",
-    credentials: "include",
+    credentials: "include"
   });
   const data = await response.json();
-  return { code: response.status, data };    
+  return { code: response.status, data };
 }
-
-export { login, logout, register, me };

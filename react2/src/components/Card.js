@@ -11,6 +11,7 @@ import BackCard from "../images/back_card.jpg";
 const useStyles = makeStyles(theme => ({
   card: {
     display: "flex",
+    maxWidth: "124px",
     flexDirection: "column",
     justifyContent: "center",
     alignContent: "center",
