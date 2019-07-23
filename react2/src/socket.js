@@ -4,6 +4,7 @@ import {
   UPDATE_DISCARD,
   UPDATE_PLAYED,
   UPDATE_DRAW_PILE,
+  UPDATE_MY_INFO,
   GAME_CREATED
 } from "./context/GameContext";
 import { navigate } from "@reach/router";
@@ -29,26 +30,36 @@ function configureSocket(dispatch) {
     dispatch({ type: GAME_CREATED, data });
     navigate(`/game/${data.gameId}`);
   });
-  socket.on("GUESS_WHO_PITCHED_IN", name => {
-    dispatch({ type: "PICTHED_IN", name });
+  socket.on("updated_hand", data => {
+    dispatch({ type: UPDATE_HAND, data });
   });
-  socket.on("CURRENT_POT", pot =>
-    dispatch({ type: "CURRENT_POT_TO_REDUCER", pot: pot })
-  );
-  socket.on("SEND_NAMES_TO_CLIENTS", names =>
-    dispatch({ type: "PUT_ALL_NAMES_TO_REDUCER", names })
-  );
-  socket.on("GUESS_WHO_GOT_ONE", name => dispatch({ type: "GOT_ONE", name }));
+  socket.on("played_cards", data => {
+    dispatch({ type: UPDATE_PLAYED, data });
+  });
+  socket.on("update_my_info", data => {
+    dispatch({ type: UPDATE_MY_INFO, data });
+  });
+  socket.on("discard_card", data => {
+    dispatch({ type: UPDATE_DISCARD, data });
+  });
+  socket.on("card_drawn", data => {
+    dispatch({ type: UPDATE_DRAW_PILE, data });
+  });
+  socket.on("discard_draw", data => {
+    dispatch({ type: UPDATE_DISCARD, data });
+  });
+  
   return socket;
 };
 
-// the following are fucntions that our client side uses
-// to emit actions to everyone connected to our web socket
+// cosntants to be used in place of the event parameter when sending
+// data to the server using socket.emit()
 export const NEW_GAME = "new_game";
 export const JOIN_GAME = "join_game";
 export const PLAY_CARD = "play_card";
 export const DISCARD_CARD = "discard_card";
 export const DRAW_CARD = "draw_card";
 export const DISCARD_DRAW = "draw_discard";
+export const INITIALIZE_GAME = "initialize_game";
 
 export default configureSocket;

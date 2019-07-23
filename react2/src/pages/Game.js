@@ -10,12 +10,15 @@ import { getGame } from "../util/api";
 import PlaySquare from "../components/PlaySquare";
 import Hand from "../components/Hand";
 import DrawPile from "../components/DrawPile";
+import CardStack from "../components/CardStack";
+import { INITIALIZE_GAME } from "../socket";
 import {
   GAME_CREATED,
   useGameState,
   useGameSocket,
   useGameDispatch
 } from "../context/GameContext";
+import TestFrom from "../components/TestForm";
 
 const useStyles = makeStyles(theme => ({
   root: {
@@ -49,10 +52,6 @@ const useStyles = makeStyles(theme => ({
     "&:not(:last-child)": {
       paddingRight: "4rem"
     }
-  },
-  cardWrapper: {
-    position: "absolute",
-    zIndex: "1"
   },
   discardPile: {
     height: "250px"
@@ -94,21 +93,9 @@ export default function Game(props) {
     // If page loaded or refreshed with /game/:id, the game
     // should be rehydrated
     if (state.gameId === null) {
-      // Dispatch to GAME_CREATED even though the game is not being created
-      // Same data is returned so its ok
-      async function fetchData() {
-        const result = await getGame(gameId);
-        if (result.code === 200) {
-          dispatch({ type: GAME_CREATED, data: result.data });
-        } else {
-          // TODO take care of case where get 401 code
-          // 401 happens when trying to load a game when
-          // you are not one of the players
-        }
-      }
-      fetchData();
+      socket.emit(INITIALIZE_GAME, { gameId });
     }
-  }, [gameId, state.gameId, dispatch]);
+  }, [gameId, state.gameId]);
 
   return (
     <section className={classes.root}>
@@ -124,7 +111,7 @@ export default function Game(props) {
                 { typ: "facedown" },
                 { typ: "facedown" },
                 { typ: "facedown" },
-                { typ: "facedown" },
+                { typ: "facedown" }
               ]}
             />
           </div>
@@ -148,18 +135,21 @@ export default function Game(props) {
               <div className={classnames(classes.playedWrapper, "opponent")}>
                 <PlaySquare hide />
               </div>
-              <DiscardPile color={color} className={classes.discardPile}>
-                <div className={classes.cardWrapper}>
-                  <Card type={color} value={5} />
-                </div>
-              </DiscardPile>
+              <DiscardPile
+                color={color}
+                className={classes.discardPile}
+                cards={state.discard[color]}
+              />
               <div className={classes.playedWrapper}>
-                <PlaySquare />
+                <PlaySquare>
+                  <CardStack cards={state.played[state.position][color]} />
+                </PlaySquare>
               </div>
             </div>
           ))}
         </Grid>
       </Grid>
+      <TestFrom />
     </section>
   );
 }

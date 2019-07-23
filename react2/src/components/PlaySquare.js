@@ -7,7 +7,11 @@ const useStyles = makeStyles(theme => ({
   root: {
     backgroundColor: "rgba(0,0,0,0.4)",
     width: "90%",
-    minHeight: "200px"
+    minHeight: "200px",
+    display: "flex",
+    justifyContent: "center",
+    alignItems: "center",
+    position: "relative"
   },
   hidden: {
     backgroundColor: "rgba(0,0,0,0)"

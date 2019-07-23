@@ -148,12 +148,15 @@ def join_game(data):
 
     # Emit hand update separately so only the client that sent the request is sent
     # the updated hand. We do not want every person in the game to know about our hand
-    emit('updated_hand',
-        {'hand': player.hand}
+    emit('update_my_info',
+        {
+            'gameId': game.id,
+            'hand': player.hand,
+            'position': player.position,
+        }
     )
     emit('game_joined',
         {
-            'position': player.position,
             'currentPlayer': game.current_player,
             'deck': game.draw_pile,
             'discard': game.discard_pile,
@@ -173,6 +176,55 @@ def join_game(data):
         room=game.id
     )
 
+@socketio.on('initialize_game', namespace='/game')
+@authenticated_only
+def initialize_game(data):
+    if 'gameId' not in data:
+        return {'message': "'gameId' must be sent as part of the request"}
+
+    game = GameModel.find_by_id(int(data['gameId']))
+    if not game:
+        return {'message': 'Game not found'}, 404
+
+    # Check if current user is a player in the game
+    # There are only two players so no need to perform
+    # another database query
+    player = None
+    opponent = None
+    for p in game.players:
+        if p.user_id == current_user.id:
+            player = p
+        else:
+            opponent = p
+        
+    if not player:
+        return {'message': 'You are not a player in the requested game'}, 401
+    
+    join_room(game.id)
+    opponent_position = (player.position % 2) + 1
+
+    emit('update_my_info',
+        {
+            'gameId': game.id,
+            'position': player.position,
+            'hand': player.hand,
+            'deck': game.draw_pile,
+            'currentPlayer': game.current_player,
+            'discard': game.discard_pile,
+            'played': {
+                player.position: player.played,
+                opponent_position: opponent.played if opponent else {
+                    'red': [],
+                    'green': [],
+                    'blue': [],
+                    'white': [],
+                    'yellow': []
+                }
+            },
+            'gameReady': True if len(game.players) == 2 else False,
+            'over': game.is_over
+        }
+    )
 
 @socketio.on('play_card', namespace='/game')
 @authenticated_only
@@ -250,7 +302,6 @@ def discard_card(data):
 
         player.hand = hand.serialize()
         game.discard_pile = discard.serialize()
-        game.current_player = (game.current_player % 2) + 1
 
         game.save_to_db()
         player.save_to_db()

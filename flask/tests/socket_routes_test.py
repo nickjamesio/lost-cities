@@ -292,7 +292,6 @@ def test_discard_card_is_player_turn(auth, flask_app, app_client):
     discardPile = {'red': [],'green': [],'blue': [],'white': [],'yellow': []}
     discardPile[card['typ']].append(card)
     assert discardData['discard'] == discardPile
-    assert discardData['currentPlayer'] == 2
 
 def test_draw_card_missing_data(auth_socket_client):
     ack = auth_socket_client.emit('draw_card', {}, namespace="/game", callback=True)

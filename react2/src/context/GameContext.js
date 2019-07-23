@@ -12,8 +12,9 @@ export const UPDATE_HAND = 0;
 export const UPDATE_DISCARD = 1;
 export const UPDATE_PLAYED = 2;
 export const UPDATE_DRAW_PILE = 3;
-export const GAME_CREATED = 4;
-export const GAME_JOINED = 5;
+export const UPDATE_MY_INFO = 4;
+export const GAME_CREATED = 5;
+export const GAME_JOINED = 6;
 
 const GameStateContext = createContext();
 const GameDispatchContext = createContext();
@@ -25,25 +26,35 @@ function reducer(state, action) {
       console.log(action.data);
       return action.data;
     case UPDATE_HAND:
+      console.log(action.data);
       return {
-        ...state
-        // set hand
+        ...state,
+        ...action.data
       };
     case UPDATE_DISCARD:
+      console.log(action.data);
       return {
-        ...state
-        // set discard
+        ...state,
+        ...action.data
       };
     case UPDATE_PLAYED:
+      console.log(action.data);
       return {
-        ...state
-        // update play cards
+        ...state,
+        ...action.data
       };
     case UPDATE_DRAW_PILE:
+      console.log(action.data);
       return {
-        ...state
-        // update play cards
+        ...state,
+        ...action.data
       };
+      case UPDATE_MY_INFO:
+        console.log(action.data);
+        return {
+          ...state,
+          ...action.data
+        };
     default:
       return state;
   }
@@ -53,9 +64,31 @@ export function GameProvider({ children }) {
   const [state, dispatch] = useReducer(reducer, {
     gameId: null,
     hand: [],
-    played: {},
+    position: "1",
+    played: {
+      "1": {
+        green: [],
+        blue: [],
+        red: [],
+        white: [],
+        yellow: []
+      },
+      "2": {
+        green: [],
+        blue: [],
+        red: [],
+        white: [],
+        yellow: []
+      }
+    },
     deck: [],
-    discard: []
+    discard: {
+      green: [],
+      blue: [],
+      red: [],
+      white: [],
+      yellow: []
+    }
   });
   const [socket, setSocket] = useState(null);
 
@@ -66,7 +99,7 @@ export function GameProvider({ children }) {
     //     socket.disconnect();
     //   }
     // };
-  }, [dispatch]);
+  }, []);
 
   return (
     <GameSocketContext.Provider value={socket}>

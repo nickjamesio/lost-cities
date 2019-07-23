@@ -1,7 +1,8 @@
 import React from "react";
 import { makeStyles } from "@material-ui/core";
-import classnames from 'classnames';
+import classnames from "classnames";
 
+import Card from "./Card";
 import YellowDiscard from "../images/yellow_discard.png";
 import BlueDiscard from "../images/blue_discard.png";
 import WhiteDiscard from "../images/white_discard.png";
@@ -9,23 +10,28 @@ import GreenDiscard from "../images/green_discard.png";
 import RedDiscard from "../images/red_discard.png";
 
 const useStyles = makeStyles(theme => ({
-  discardItem: {
+  discardPile: {
     display: "flex",
     justifyContent: "center",
     alignItems: "center",
     position: "relative",
-    width: "100%",
+    width: "100%"
   },
-  discardItemImage: {
+  discardPileImage: {
     height: "100%"
+  },
+  cardWrapper: {
+    position: "absolute",
+    zIndex: "1"
   }
 }));
 
 export default function DiscardPile(props) {
-  const { color, children, className: classNameProp } = props;
+  const { color, cards, children, className: classNameProp } = props;
   const classes = useStyles();
-  let imgSrc;
+  const card = cards.length ? cards[cards.length - 1] : null;
 
+  let imgSrc;
   switch (color) {
     case "red":
       imgSrc = RedDiscard;
@@ -43,17 +49,19 @@ export default function DiscardPile(props) {
       imgSrc = BlueDiscard;
       break;
     default:
-      imgSrc = ""
+      imgSrc = "";
   }
 
   return (
-    <div className={classnames(classes.discardItem, classNameProp)}>
+    <div className={classnames(classes.discardPile, classNameProp)}>
       <img
         src={imgSrc}
-        className={classes.discardItemImage}
+        className={classes.discardPileImage}
         alt={`${color} discard pile`}
       />
-      {children}
+      <div className={classes.cardWrapper}>
+        {card ? <Card type={card.typ} value={card.val} /> : null}
+      </div>
     </div>
   );
 }

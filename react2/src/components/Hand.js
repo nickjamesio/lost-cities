@@ -16,7 +16,7 @@ const useStyles = makeStyles(theme => ({
       marginTop: "-80px"
     }
   },
-  cardWrapper: {
+  cardWrapperFull: {
     "&:nth-child(1)": {
       transform: "rotate(-18deg)",
       marginRight: "-40px",
@@ -34,6 +34,24 @@ const useStyles = makeStyles(theme => ({
     },
     "&:nth-child(4)": {
       transform: "rotate(18deg)",
+      marginTop: "30px"
+    }
+  },
+  cardWrapperNotFull: {
+    "&:nth-child(1)": {
+      transform: "rotate(-9deg)",
+      marginRight: "-40px",
+      marginTop: "30px"
+    },
+    "&:nth-child(2)": {
+      // Not sure why but had to add transform so middle card has correct overlap
+      // and z-index
+      transform: "rotate(0deg)",
+      marginRight: "-50px",
+      marginTop: "15px"
+    },
+    "&:nth-child(3)": {
+      transform: "rotate(9deg)",
       marginTop: "30px"
     }
   }
@@ -55,14 +73,21 @@ function Hand(props) {
     <div className={classes.root}>
       <div className={classes.row}>
         {cards.slice(0, 4).map((card, index) => (
-          <div key={`${card.typ}${index}`} className={classes.cardWrapper}>
+          <div key={`${card.typ}${index}`} className={classes.cardWrapperFull}>
             {renderCard(hidden, card)}
           </div>
         ))}
       </div>
       <div className={classes.row}>
         {cards.slice(4).map((card, index) => (
-          <div key={`${card.typ}${index}`} className={classes.cardWrapper}>
+          <div
+            key={`${card.typ}${index}`}
+            className={
+              cards.length === 8
+                ? classes.cardWrapperFull
+                : classes.cardWrapperNotFull
+            }
+          >
             {renderCard(hidden, card)}
           </div>
         ))}
