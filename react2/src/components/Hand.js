@@ -11,62 +11,59 @@ const useStyles = makeStyles(theme => ({
   row: {
     display: "flex",
     justifyContent: "center",
-    position: "relative",
     height: "200px",
     "&:nth-child(2)": {
-        marginTop: "-80px"
+      marginTop: "-80px"
     }
   },
-  card: {
-    position: "absolute",
+  cardWrapper: {
     "&:nth-child(1)": {
-      top: 30,
-      left: 80,
-      transform: "rotate(-18deg)"
+      transform: "rotate(-18deg)",
+      marginRight: "-40px",
+      marginTop: "30px"
     },
     "&:nth-child(2)": {
-      top: 15,
-      left: 150,
-      transform: "rotate(-9deg)"
+      transform: "rotate(-9deg)",
+      marginRight: "-50px",
+      marginTop: "15px"
     },
     "&:nth-child(3)": {
-      top: 15,
-      left: 220,
-      transform: "rotate(9deg)"
+      transform: "rotate(9deg)",
+      marginRight: "-40px",
+      marginTop: "15px"
     },
     "&:nth-child(4)": {
-      top: 30,
-      left: 290,
-      transform: "rotate(18deg)"
+      transform: "rotate(18deg)",
+      marginTop: "30px"
     }
   }
 }));
 
+function renderCard(hidden, card) {
+  return hidden ? (
+    <Card type="facedown" />
+  ) : (
+    <Card type={card.typ} value={card.val} />
+  );
+}
+
 function Hand(props) {
-  const { cards } = props;
+  const { cards, hidden } = props;
   const classes = useStyles();
 
   return (
     <div className={classes.root}>
       <div className={classes.row}>
         {cards.slice(0, 4).map((card, index) => (
-          <div className={classes.card}>
-            <Card
-              key={`${card.typ}${index}`}
-              color={card.typ}
-              value={card.val}
-            />
+          <div key={`${card.typ}${index}`} className={classes.cardWrapper}>
+            {renderCard(hidden, card)}
           </div>
         ))}
       </div>
       <div className={classes.row}>
         {cards.slice(4).map((card, index) => (
-          <div className={classes.card}>
-            <Card
-              key={`${card.typ}${index}`}
-              color={card.typ}
-              value={card.val}
-            />
+          <div key={`${card.typ}${index}`} className={classes.cardWrapper}>
+            {renderCard(hidden, card)}
           </div>
         ))}
       </div>

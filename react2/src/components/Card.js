@@ -1,6 +1,7 @@
+import React from "react";
+import PropTypes from "prop-types";
 import { makeStyles } from "@material-ui/core";
 
-import React from "react";
 import BlueCard from "../images/blue_card.jpg";
 import RedCard from "../images/red_card.jpg";
 import WhiteCard from "../images/white_card.jpg";
@@ -17,7 +18,7 @@ const useStyles = makeStyles(theme => ({
     alignContent: "center",
     height: "200px",
     backgroundColor: "black",
-    padding: "0.5rem",
+    padding: "0.5rem"
   },
   img: {
     height: "calc(100% - 1.4rem)"
@@ -34,11 +35,11 @@ const useStyles = makeStyles(theme => ({
 }));
 
 function Card(props) {
-  const { color, value } = props;
-  const classes = useStyles()
+  const { type, value } = props;
+  const classes = useStyles();
   let imgSrc = "";
 
-  switch (color) {
+  switch (type) {
     case "red":
       imgSrc = RedCard;
       break;
@@ -54,19 +55,34 @@ function Card(props) {
     case "blue":
       imgSrc = BlueCard;
       break;
+    case "facedown":
     default:
       imgSrc = BackCard;
   }
 
   return (
-    <div className={classes.card} >
+    <div className={classes.card}>
       <div className={classes.valueContainer}>
-        <span>{value}</span>
-        <span>{value}</span>
+        {type !== "facedown" ? (
+          <>
+            <span>{value}</span>
+            <span>{value}</span>
+          </>
+        ) : null}
       </div>
-     <img src={imgSrc} className={classes.img} alt={`${color} card`} />
+      <img src={imgSrc} className={classes.img} alt={`${type} card`} />
     </div>
   );
 }
+
+Card.defaultProps = {
+  type: "facedown",
+  value: 0
+};
+
+Card.propTypes = {
+  color: PropTypes.string,
+  value: PropTypes.number
+};
 
 export default Card;

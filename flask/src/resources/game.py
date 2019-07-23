@@ -30,10 +30,11 @@ class MyGame(Resource):
         
         opponent_position = (player.position % 2) + 1
         return {
-            'hand': player.hand,
+            'gameId': game.id,
             'position': player.position,
-            'currentPlayer': game.current_player,
+            'hand': player.hand,
             'deck': game.draw_pile,
+            'currentPlayer': game.current_player,
             'discard': game.discard_pile,
             'played': {
                 player.position: player.played,

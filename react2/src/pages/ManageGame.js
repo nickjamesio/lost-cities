@@ -33,7 +33,7 @@ function NewGame(props) {
   const [form, handleChange] = useFormFields({ position: "1" });
 
   function handleSubmit() {
-    socket.emit(NEW_GAME, {position: form.position});
+    socket.emit(NEW_GAME, { position: form.position });
   }
 
   return (
@@ -51,7 +51,12 @@ function NewGame(props) {
           <FormControlLabel value="1" control={<Radio />} label="First" />
           <FormControlLabel value="2" control={<Radio />} label="Second" />
         </RadioGroup>
-        <Button type="submit" variant="contained" color="secondary" onClick={handleSubmit}>
+        <Button
+          type="submit"
+          variant="contained"
+          color="secondary"
+          onClick={handleSubmit}
+        >
           create game
         </Button>
       </FormControl>
@@ -79,7 +84,7 @@ function JoinGame(props) {
   return (
     <Paper className={classes.root}>
       <Typography variant="h4">Join Game</Typography>
-      <FormControl component="fieldset" className={classes.formControl}>
+      <form>
         <TextField
           variant="outlined"
           margin="normal"
@@ -91,28 +96,30 @@ function JoinGame(props) {
           value={form.gameid}
           onChange={handleChange}
         />
-        <RadioGroup
-          aria-label="Player position"
-          name="position"
-          className={classes.group}
-          value={form.position}
-          onChange={handleChange}
-        >
-          <FormControlLabel
-            value="1"
-            control={<Radio />}
-            label="First player"
-          />
-          <FormControlLabel
-            value="2"
-            control={<Radio />}
-            label="Second player"
-          />
-        </RadioGroup>
-        <Button type="submit" variant="contained" color="secondary">
-          Join Game
-        </Button>
-      </FormControl>
+        <FormControl component="fieldset" className={classes.formControl}>
+          <RadioGroup
+            aria-label="Player position"
+            name="position"
+            className={classes.group}
+            value={form.position}
+            onChange={handleChange}
+          >
+            <FormControlLabel
+              value="1"
+              control={<Radio />}
+              label="First player"
+            />
+            <FormControlLabel
+              value="2"
+              control={<Radio />}
+              label="Second player"
+            />
+          </RadioGroup>
+          <Button type="submit" variant="contained" color="secondary">
+            Join Game
+          </Button>
+        </FormControl>
+      </form>
     </Paper>
   );
 }
@@ -125,7 +132,7 @@ const useManageStyles = makeStyles(theme => ({
     height: "90vh"
   },
   wrapper: {
-    display: 'flex',
+    display: "flex"
   }
 }));
 

@@ -6,15 +6,16 @@ import classnames from "classnames";
 import Background from "../images/background.png";
 import Card from "../components/Card";
 import DiscardPile from "../components/DiscardPile";
+import { getGame } from "../util/api";
+import PlaySquare from "../components/PlaySquare";
+import Hand from "../components/Hand";
+import DrawPile from "../components/DrawPile";
 import {
   GAME_CREATED,
   useGameState,
   useGameSocket,
   useGameDispatch
 } from "../context/GameContext";
-import { getGame } from "../util/api";
-import PlaySquare from "../components/PlaySquare";
-import Hand from "../components/Hand";
 
 const useStyles = makeStyles(theme => ({
   root: {
@@ -27,9 +28,10 @@ const useStyles = makeStyles(theme => ({
   columns: {
     height: "inherit"
   },
-  hand: {
+  cards: {
     // backgroundColor: "rgba(255,0,0,.5)",
-    height: "inherit"
+    display: "flex",
+    flexDirection: "column"
   },
   play: {
     height: "inherit"
@@ -65,12 +67,19 @@ const useStyles = makeStyles(theme => ({
       justifyContent: "flex-end"
     }
   },
-  handRows: {
-    display: "flex",
-    flexDirection: "column",
-  },
   hand: {
-    flexGrow: 1
+    flexGrow: 1,
+    display: "flex",
+    justifyContent: "center",
+    alignItems: "flex-end",
+    overflow: "hidden",
+    "&.opponent": {
+      transform: "rotate(180deg)"
+    }
+  },
+  drawPile: {
+    display: "flex",
+    justifyContent: "space-around"
   }
 }));
 
@@ -104,14 +113,26 @@ export default function Game(props) {
   return (
     <section className={classes.root}>
       <Grid container className={classes.columns}>
-        <Grid item xs={4} className={classes.hand}>
-          <div className={classes.handRows}>
-            <div className={classes.hand}>
-              <Hand cards={state['hand']} />
-            </div>
-            <div className={classes.hand}>
-
-            </div>
+        <Grid item xs={4} className={classes.cards}>
+          <div className={classnames(classes.hand, "opponent")}>
+            <Hand
+              cards={[
+                { typ: "facedown" },
+                { typ: "facedown" },
+                { typ: "facedown" },
+                { typ: "facedown" },
+                { typ: "facedown" },
+                { typ: "facedown" },
+                { typ: "facedown" },
+                { typ: "facedown" },
+              ]}
+            />
+          </div>
+          <div className={classes.drawPile}>
+            <DrawPile />
+          </div>
+          <div className={classes.hand}>
+            <Hand cards={state["hand"]} />
           </div>
         </Grid>
         <Grid
@@ -125,11 +146,11 @@ export default function Game(props) {
           {["yellow", "blue", "white", "green", "red"].map(color => (
             <div key={color} className={classes.boardColumnWrapper}>
               <div className={classnames(classes.playedWrapper, "opponent")}>
-                <PlaySquare hide/>
+                <PlaySquare hide />
               </div>
               <DiscardPile color={color} className={classes.discardPile}>
                 <div className={classes.cardWrapper}>
-                  <Card color={color} value={5} />
+                  <Card type={color} value={5} />
                 </div>
               </DiscardPile>
               <div className={classes.playedWrapper}>

@@ -103,7 +103,9 @@ def new_game(data):
                     'white': [],
                     'yellow': []
                 }
-            }
+            },
+            'gameReady': False,
+            'over': game.is_over
          }
     )
 
