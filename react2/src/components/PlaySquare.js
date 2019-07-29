@@ -13,8 +13,9 @@ const useStyles = makeStyles(theme => ({
     alignItems: "center",
     position: "relative"
   },
-  hidden: {
-    backgroundColor: "rgba(0,0,0,0)"
+  opponent: {
+    backgroundColor: "rgba(0,0,0,0)",
+    transform: "rotate(180deg)"
   },
   highlight: {
     backgroundColor: "rgba(0,255,0,0.3)"
@@ -22,11 +23,11 @@ const useStyles = makeStyles(theme => ({
 }));
 
 function PlaySquare(props) {
-  const { highlight, children, hide } = props;
+  const { highlight, children, opponent } = props;
   const classes = useStyles();
   const rootStyles = classnames(
     classes.root,
-    hide ? classes.hidden : null,
+    opponent ? classes.opponent : null,
     highlight ? classes.highlight : null
   );
 

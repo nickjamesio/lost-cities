@@ -5,7 +5,8 @@ import {
   UPDATE_PLAYED,
   UPDATE_DRAW_PILE,
   UPDATE_MY_INFO,
-  GAME_CREATED
+  GAME_CREATED,
+  GAME_JOINED
 } from "./context/GameContext";
 import { navigate } from "@reach/router";
 import { URL } from "./constants";
@@ -47,6 +48,9 @@ function configureSocket(dispatch) {
   });
   socket.on("discard_draw", data => {
     dispatch({ type: UPDATE_DISCARD, data });
+  });
+  socket.on("game_joined", data => {
+    dispatch({ type: GAME_JOINED, data });
   });
   
   return socket;

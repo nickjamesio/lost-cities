@@ -25,6 +25,12 @@ function reducer(state, action) {
     case GAME_CREATED:
       console.log(action.data);
       return action.data;
+    case GAME_JOINED:
+      console.log(action.data);
+      return {
+        ...state,
+        ...action.data
+      };
     case UPDATE_HAND:
       console.log(action.data);
       return {
@@ -49,12 +55,12 @@ function reducer(state, action) {
         ...state,
         ...action.data
       };
-      case UPDATE_MY_INFO:
-        console.log(action.data);
-        return {
-          ...state,
-          ...action.data
-        };
+    case UPDATE_MY_INFO:
+      console.log(action.data);
+      return {
+        ...state,
+        ...action.data
+      };
     default:
       return state;
   }

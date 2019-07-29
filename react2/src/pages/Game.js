@@ -88,6 +88,7 @@ export default function Game(props) {
   const state = useGameState();
   const socket = useGameSocket();
   const dispatch = useGameDispatch();
+  const opponentPosition = (state.position % 2) + 1;
 
   useEffect(() => {
     // If page loaded or refreshed with /game/:id, the game
@@ -133,7 +134,9 @@ export default function Game(props) {
           {["yellow", "blue", "white", "green", "red"].map(color => (
             <div key={color} className={classes.boardColumnWrapper}>
               <div className={classnames(classes.playedWrapper, "opponent")}>
-                <PlaySquare hide />
+                <PlaySquare opponent>
+                  <CardStack cards={state.played[opponentPosition][color]} />
+                </PlaySquare>
               </div>
               <DiscardPile
                 color={color}

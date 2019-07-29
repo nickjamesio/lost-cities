@@ -24,6 +24,8 @@ const useStyles = makeStyles(theme => ({
     marginRight: theme.spacing(2)
   },
   title: {
+    color: "white",
+    fontSize: "1.2rem",
     display: "none",
     [theme.breakpoints.up("sm")]: {
       display: "block"
@@ -85,7 +87,7 @@ export default function GameAppBar() {
     setUser(null);
     handleMenuClose();
     logout();
-    navigate('/');
+    navigate("/");
   }
 
   const menuId = "account-menu";
@@ -145,9 +147,7 @@ export default function GameAppBar() {
     <div className={classes.grow}>
       <AppBar position="static">
         <Toolbar>
-          <Typography className={classes.title} variant="h6" noWrap>
-            Lost Cities
-          </Typography>
+          <Link className={classes.title} component={RouterLink} to="/">Lost Cities</Link>
           <div className={classes.grow} />
           <div className={classes.sectionDesktop}>
             <div className={classes.linkSection}>
