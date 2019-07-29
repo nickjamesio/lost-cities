@@ -29,6 +29,13 @@ class PlayerModel(db.Model):
     })
     score = db.Column(db.Integer, default=0)
 
+    def json(self):
+        return {
+            'id': self.id,
+            'username': self.user.username,
+            'score': self.score
+        }
+
     def save_to_db(self):
         db.session.add(self)
         db.session.commit()

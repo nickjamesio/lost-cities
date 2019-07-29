@@ -4,20 +4,18 @@ import { Grid } from "@material-ui/core";
 import classnames from "classnames";
 
 import Background from "../images/background.png";
-import Card from "../components/Card";
 import DiscardPile from "../components/DiscardPile";
-import { getGame } from "../util/api";
 import PlaySquare from "../components/PlaySquare";
 import Hand from "../components/Hand";
 import DrawPile from "../components/DrawPile";
 import CardStack from "../components/CardStack";
 import { INITIALIZE_GAME } from "../socket";
 import {
-  GAME_CREATED,
   useGameState,
   useGameSocket,
   useGameDispatch
 } from "../context/GameContext";
+import Player from "../components/Player";
 import TestFrom from "../components/TestForm";
 
 const useStyles = makeStyles(theme => ({
@@ -117,9 +115,11 @@ export default function Game(props) {
               ]}
             />
           </div>
+          <Player player={state.opponent} />
           <div className={classes.drawPile}>
             <DrawPile cards={state.deck} />
           </div>
+          <Player player={state.me} />
           <div className={classes.hand}>
             <Hand cards={state["hand"]} />
           </div>
@@ -153,7 +153,7 @@ export default function Game(props) {
           ))}
         </Grid>
       </Grid>
-      <TestFrom />
+      {/* <TestFrom /> */}
     </section>
   );
 }

@@ -15,13 +15,13 @@ function DrawPile(props) {
   const { cards } = props;
   const classes = useStyles();
 
-  return (
+  return cards.length ? (
     <div className={classes.drawPile}>
       <CardCount count={cards.length} drawPile>
         <Card type="facedown" />
       </CardCount>
     </div>
-  );
+  ) : null;
 }
 
 export default DrawPile;

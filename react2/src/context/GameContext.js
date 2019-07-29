@@ -94,7 +94,9 @@ export function GameProvider({ children }) {
       red: [],
       white: [],
       yellow: []
-    }
+    },
+    opponent: {},
+    me: {}
   });
   const [socket, setSocket] = useState(null);
 

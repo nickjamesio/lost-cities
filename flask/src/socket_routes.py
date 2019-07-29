@@ -105,7 +105,9 @@ def new_game(data):
                 }
             },
             'gameReady': False,
-            'over': game.is_over
+            'over': game.is_over,
+            'opponent': {},
+            'me': player.json()
          }
     )
 
@@ -153,6 +155,7 @@ def join_game(data):
             'gameId': game.id,
             'hand': player.hand,
             'position': player.position,
+            'me': player.json()
         }
     )
     emit('game_joined',
@@ -171,7 +174,8 @@ def join_game(data):
                 }
             },
             'gameReady': True if PlayerModel.query.with_parent(game).count() == 2 else False,
-            'over': game.is_over
+            'over': game.is_over,
+            'opponent': opponent.json() if opponent else {}
         },
         room=game.id
     )
@@ -222,7 +226,9 @@ def initialize_game(data):
                 }
             },
             'gameReady': True if len(game.players) == 2 else False,
-            'over': game.is_over
+            'over': game.is_over,
+            'opponent': opponent.json() if opponent else {},
+            'me': player.json()
         }
     )
 
