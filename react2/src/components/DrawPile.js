@@ -1,6 +1,8 @@
 import React from "react";
 import { makeStyles } from "@material-ui/core";
 
+import CardCount from "./CardCount";
+
 import Card from "./Card";
 const useStyles = makeStyles(theme => ({
   drawPile: {
@@ -10,12 +12,14 @@ const useStyles = makeStyles(theme => ({
 }));
 
 function DrawPile(props) {
-  const { drawPile } = props;
+  const { cards } = props;
   const classes = useStyles();
 
   return (
     <div className={classes.drawPile}>
-      <Card type="facedown" />
+      <CardCount count={cards.length} drawPile>
+        <Card type="facedown" />
+      </CardCount>
     </div>
   );
 }

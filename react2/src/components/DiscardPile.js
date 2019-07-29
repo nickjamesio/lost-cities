@@ -3,6 +3,7 @@ import { makeStyles } from "@material-ui/core";
 import classnames from "classnames";
 
 import Card from "./Card";
+import CardCount from "./CardCount";
 import YellowDiscard from "../images/yellow_discard.png";
 import BlueDiscard from "../images/blue_discard.png";
 import WhiteDiscard from "../images/white_discard.png";
@@ -23,6 +24,9 @@ const useStyles = makeStyles(theme => ({
   cardWrapper: {
     position: "absolute",
     zIndex: "1"
+  },
+  count: {
+    
   }
 }));
 
@@ -60,7 +64,11 @@ export default function DiscardPile(props) {
         alt={`${color} discard pile`}
       />
       <div className={classes.cardWrapper}>
-        {card ? <Card type={card.typ} value={card.val} /> : null}
+        {card ? (
+          <CardCount count={cards.length}>
+            <Card type={card.typ} value={card.val} />
+          </CardCount>
+        ) : null}
       </div>
     </div>
   );

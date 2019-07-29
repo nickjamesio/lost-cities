@@ -78,7 +78,8 @@ const useStyles = makeStyles(theme => ({
   },
   drawPile: {
     display: "flex",
-    justifyContent: "space-around"
+    justifyContent: "space-around",
+    height: "150px"
   }
 }));
 
@@ -117,7 +118,7 @@ export default function Game(props) {
             />
           </div>
           <div className={classes.drawPile}>
-            <DrawPile />
+            <DrawPile cards={state.deck} />
           </div>
           <div className={classes.hand}>
             <Hand cards={state["hand"]} />
