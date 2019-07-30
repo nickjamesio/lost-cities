@@ -13,7 +13,7 @@ const useStyles = makeStyles(theme => ({
     justifyContent: "center",
     height: "200px",
     "&:nth-child(2)": {
-      marginTop: "-80px"
+      marginTop: "-130px"
     }
   },
   cardWrapperFull: {

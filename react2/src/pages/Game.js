@@ -52,7 +52,7 @@ const useStyles = makeStyles(theme => ({
     }
   },
   discardPile: {
-    height: "250px"
+    height: "170px"
   },
   playedWrapper: {
     display: "flex",
@@ -64,15 +64,22 @@ const useStyles = makeStyles(theme => ({
       justifyContent: "flex-end"
     }
   },
-  hand: {
+  handWrapper: {
     flexGrow: 1,
+    position: "relative",
     display: "flex",
     justifyContent: "center",
-    alignItems: "flex-end",
+    width: "100%",
     overflow: "hidden",
     "&.opponent": {
       transform: "rotate(180deg)"
     }
+  },
+  hand: {
+    position: "absolute",
+    display: "flex",
+    justifyContent: "center",
+    alignItems: "flex-end",
   },
   drawPile: {
     display: "flex",
@@ -101,27 +108,31 @@ export default function Game(props) {
     <section className={classes.root}>
       <Grid container className={classes.columns}>
         <Grid item xs={4} className={classes.cards}>
-          <div className={classnames(classes.hand, "opponent")}>
-            <Hand
-              cards={[
-                { typ: "facedown" },
-                { typ: "facedown" },
-                { typ: "facedown" },
-                { typ: "facedown" },
-                { typ: "facedown" },
-                { typ: "facedown" },
-                { typ: "facedown" },
-                { typ: "facedown" }
-              ]}
-            />
+          <div className={classnames(classes.handWrapper, "opponent")}>
+            <div className={classes.hand}>
+              <Hand
+                cards={[
+                  { typ: "facedown" },
+                  { typ: "facedown" },
+                  { typ: "facedown" },
+                  { typ: "facedown" },
+                  { typ: "facedown" },
+                  { typ: "facedown" },
+                  { typ: "facedown" },
+                  { typ: "facedown" }
+                ]}
+              />
+            </div>
           </div>
-          <Player player={state.opponent} />
+          <Player player={state.opponent} active={state.position != state.currentPlayer} />
           <div className={classes.drawPile}>
             <DrawPile cards={state.deck} />
           </div>
-          <Player player={state.me} />
-          <div className={classes.hand}>
-            <Hand cards={state["hand"]} />
+          <Player player={state.me} active={state.position == state.currentPlayer}/>
+          <div className={classes.handWrapper}>
+            <div className={classes.hand}>
+              <Hand cards={state["hand"]} />
+            </div>
           </div>
         </Grid>
         <Grid
@@ -153,7 +164,7 @@ export default function Game(props) {
           ))}
         </Grid>
       </Grid>
-      {/* <TestFrom /> */}
+      <TestFrom />
     </section>
   );
 }

@@ -24,7 +24,7 @@ function CardStack(props) {
   return (
     <div className={classes.cardStack}>
       {cards.map((card, index) => (
-        <div key={`${card.typ}${index}`} className={classes.card} style={{top: index * 33}}>
+        <div key={`${card.typ}${index}`} className={classes.card} style={{top: index * 23}}>
           <Card type={card.typ} value={card.val} />
         </div>
       ))}

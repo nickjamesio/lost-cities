@@ -12,21 +12,21 @@ import BackCard from "../images/back_card.jpg";
 const useStyles = makeStyles(theme => ({
   card: {
     display: "flex",
-    maxWidth: "124px",
+    maxWidth: "100px",
     flexDirection: "column",
     justifyContent: "center",
     alignContent: "center",
-    height: "200px",
+    height: "150px",
     backgroundColor: "black",
     padding: "0.5rem"
   },
   img: {
-    height: "calc(100% - 1.4rem)"
+    height: "calc(100% - 1rem)"
   },
   valueContainer: {
     fontWeight: "bold",
     lineHeight: "1",
-    fontSize: "1.4rem",
+    // fontSize: "1.4rem",
     display: "flex",
     justifyContent: "space-between",
     color: "white",
