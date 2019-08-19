@@ -1,4 +1,4 @@
-import { URL } from "../constants";
+import { URL } from "./constants";
 
 export async function login(form) {
   const response = await fetch(`${URL}/login`, {

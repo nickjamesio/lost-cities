@@ -57,38 +57,48 @@ const useStyles = makeStyles(theme => ({
   }
 }));
 
-function renderCard(hidden, card) {
+function renderCard(hidden, card, index) {
   return hidden ? (
     <Card type="facedown" />
   ) : (
-    <Card type={card.typ} value={card.val} />
+    <Card type={card.typ} value={card.val} position={index} />
   );
 }
 
 function Hand(props) {
   const { cards, hidden } = props;
   const classes = useStyles();
+  const rowOne = [];
+  const rowTwo = [];
+  cards.forEach((card, index) => {
+    if (index < 4) {
+      rowOne.push(renderCard(hidden, card, index));
+    }
+    else {
+      rowTwo.push(renderCard(hidden, card, index))
+    }
+  });
 
   return (
     <div className={classes.root}>
       <div className={classes.row}>
-        {cards.slice(0, 4).map((card, index) => (
-          <div key={`${card.typ}${index}`} className={classes.cardWrapperFull}>
-            {renderCard(hidden, card)}
+        {rowOne.map((Card, index) => (
+          <div key={`${index}`} className={classes.cardWrapperFull}>
+            {Card}
           </div>
         ))}
       </div>
       <div className={classes.row}>
-        {cards.slice(4).map((card, index) => (
+        {rowTwo.map((Card, index) => (
           <div
-            key={`${card.typ}${index}`}
+            key={`${index}`}
             className={
               cards.length === 8
                 ? classes.cardWrapperFull
                 : classes.cardWrapperNotFull
             }
           >
-            {renderCard(hidden, card)}
+            {Card}
           </div>
         ))}
       </div>

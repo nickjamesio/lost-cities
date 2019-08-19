@@ -16,6 +16,8 @@ import {
   useGameDispatch
 } from "../context/GameContext";
 import Player from "../components/Player";
+import { DndProvider } from "react-dnd";
+import HTML5Backend from "react-dnd-html5-backend";
 import TestFrom from "../components/TestForm";
 
 const useStyles = makeStyles(theme => ({
@@ -79,7 +81,7 @@ const useStyles = makeStyles(theme => ({
     position: "absolute",
     display: "flex",
     justifyContent: "center",
-    alignItems: "flex-end",
+    alignItems: "flex-end"
   },
   drawPile: {
     display: "flex",
@@ -105,66 +107,74 @@ export default function Game(props) {
   }, [gameId, state.gameId]);
 
   return (
-    <section className={classes.root}>
-      <Grid container className={classes.columns}>
-        <Grid item xs={4} className={classes.cards}>
-          <div className={classnames(classes.handWrapper, "opponent")}>
-            <div className={classes.hand}>
-              <Hand
-                cards={[
-                  { typ: "facedown" },
-                  { typ: "facedown" },
-                  { typ: "facedown" },
-                  { typ: "facedown" },
-                  { typ: "facedown" },
-                  { typ: "facedown" },
-                  { typ: "facedown" },
-                  { typ: "facedown" }
-                ]}
-              />
-            </div>
-          </div>
-          <Player player={state.opponent} active={state.position != state.currentPlayer} />
-          <div className={classes.drawPile}>
-            <DrawPile cards={state.deck} />
-          </div>
-          <Player player={state.me} active={state.position == state.currentPlayer}/>
-          <div className={classes.handWrapper}>
-            <div className={classes.hand}>
-              <Hand cards={state["hand"]} />
-            </div>
-          </div>
-        </Grid>
-        <Grid
-          item
-          container
-          xs={8}
-          className={classes.play}
-          justify="center"
-          alignItems="center"
-        >
-          {["yellow", "blue", "white", "green", "red"].map(color => (
-            <div key={color} className={classes.boardColumnWrapper}>
-              <div className={classnames(classes.playedWrapper, "opponent")}>
-                <PlaySquare opponent>
-                  <CardStack cards={state.played[opponentPosition][color]} />
-                </PlaySquare>
-              </div>
-              <DiscardPile
-                color={color}
-                className={classes.discardPile}
-                cards={state.discard[color]}
-              />
-              <div className={classes.playedWrapper}>
-                <PlaySquare>
-                  <CardStack cards={state.played[state.position][color]} />
-                </PlaySquare>
+    <DndProvider backend={HTML5Backend}>
+      <section className={classes.root}>
+        <Grid container className={classes.columns}>
+          <Grid item xs={4} className={classes.cards}>
+            <div className={classnames(classes.handWrapper, "opponent")}>
+              <div className={classes.hand}>
+                <Hand
+                  cards={[
+                    { typ: "facedown" },
+                    { typ: "facedown" },
+                    { typ: "facedown" },
+                    { typ: "facedown" },
+                    { typ: "facedown" },
+                    { typ: "facedown" },
+                    { typ: "facedown" },
+                    { typ: "facedown" }
+                  ]}
+                />
               </div>
             </div>
-          ))}
+            <Player
+              player={state.opponent}
+              active={state.position !== state.currentPlayer}
+            />
+            <div className={classes.drawPile}>
+              <DrawPile cards={state.deck} />
+            </div>
+            <Player
+              player={state.me}
+              active={state.position === state.currentPlayer}
+            />
+            <div className={classes.handWrapper}>
+              <div className={classes.hand}>
+                <Hand cards={state["hand"]} />
+              </div>
+            </div>
+          </Grid>
+          <Grid
+            item
+            container
+            xs={8}
+            className={classes.play}
+            justify="center"
+            alignItems="center"
+          >
+            {["yellow", "blue", "white", "green", "red"].map(color => (
+              <div key={color} className={classes.boardColumnWrapper}>
+                <div className={classnames(classes.playedWrapper, "opponent")}>
+                  <PlaySquare opponent>
+                    <CardStack cards={state.played[opponentPosition][color]} />
+                  </PlaySquare>
+                </div>
+                <DiscardPile
+                  color={color}
+                  className={classes.discardPile}
+                  cards={state.discard[color]}
+                />
+                <div className={classes.playedWrapper}>
+                  <PlaySquare>
+                    <CardStack cards={state.played[state.position][color]} />
+                  </PlaySquare>
+                </div>
+              </div>
+            ))}
+          </Grid>
         </Grid>
-      </Grid>
-      <TestFrom />
-    </section>
+        <TestFrom />
+      </section>
+    </DndProvider>
   );
 }

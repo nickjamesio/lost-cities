@@ -9,7 +9,7 @@ import {
   GAME_JOINED
 } from "./context/GameContext";
 import { navigate } from "@reach/router";
-import { URL } from "./constants";
+import { URL } from "./util/constants";
 
 function configureSocket(dispatch) {
   const socket = io(`${URL}/game`);

@@ -10,12 +10,10 @@ import {
 } from "@material-ui/core";
 import { useGameSocket, useGameState } from "../context/GameContext";
 import {
-  NEW_GAME,
   PLAY_CARD,
   DRAW_CARD,
   DISCARD_CARD,
   DISCARD_DRAW,
-  INITIALIZE_GAME
 } from "../socket";
 
 const useStyles = makeStyles(theme => ({

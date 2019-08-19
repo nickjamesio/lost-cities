@@ -2,6 +2,8 @@ import React from "react";
 import { makeStyles } from "@material-ui/core";
 import classnames from "classnames";
 
+import { useDrop } from "react-dnd";
+
 import Card from "./Card";
 import CardCount from "./CardCount";
 import YellowDiscard from "../images/yellow_discard.png";
@@ -9,6 +11,13 @@ import BlueDiscard from "../images/blue_discard.png";
 import WhiteDiscard from "../images/white_discard.png";
 import GreenDiscard from "../images/green_discard.png";
 import RedDiscard from "../images/red_discard.png";
+import { useGameSocket, useGameState } from "../context/GameContext";
+import { ItemTypes } from "../util/constants";
+import {
+  DISCARD_CARD,
+  DISCARD_DRAW,
+} from "../socket";
+import Overlay from "./Overlay";
 
 const useStyles = makeStyles(theme => ({
   discardPile: {
@@ -25,15 +34,30 @@ const useStyles = makeStyles(theme => ({
     position: "absolute",
     zIndex: "1"
   },
-  count: {
-    
-  }
 }));
 
 export default function DiscardPile(props) {
-  const { color, cards, children, className: classNameProp } = props;
+  const { color, cards, className: classNameProp } = props;
   const classes = useStyles();
+  const socket = useGameSocket();
+  const state = useGameState();
   const card = cards.length ? cards[cards.length - 1] : null;
+  const [{ isOver, canDrop }, drop] = useDrop({
+    accept: ItemTypes.FACE_UP,
+    drop: (item, monitor) => {
+      socket.emit(DISCARD_CARD, {
+        gameId: state.gameId,
+        cardIndex: item.position
+      });
+    },
+    canDrop: (item, monitor) => {
+      return item.color == color && state.currentPlayer == state.position;
+    },
+    collect: monitor => ({
+      isOver: monitor.isOver(),
+      canDrop: monitor.canDrop()
+    })
+  });
 
   let imgSrc;
   switch (color) {
@@ -57,7 +81,7 @@ export default function DiscardPile(props) {
   }
 
   return (
-    <div className={classnames(classes.discardPile, classNameProp)}>
+    <div className={classnames(classes.discardPile, classNameProp)} ref={drop}>
       <img
         src={imgSrc}
         className={classes.discardPileImage}
@@ -70,6 +94,8 @@ export default function DiscardPile(props) {
           </CardCount>
         ) : null}
       </div>
+      {!isOver && canDrop && <Overlay color="black" />}
+      {isOver && canDrop && <Overlay color={color} />}
     </div>
   );
 }

@@ -1,4 +1,4 @@
-import { URL } from "../constants";
+import { URL } from "./constants";
 
 export async function getGame(gid) {
   const response = await fetch(`${URL}/mygame/${gid}`, {
