@@ -1,7 +1,7 @@
 import React from "react";
 import { makeStyles } from "@material-ui/core";
 
-import Card from "./Card";
+import Card, { PLAYED } from "./Card";
 
 const useStyles = makeStyles(theme => ({
   cardStack: {
@@ -13,8 +13,7 @@ const useStyles = makeStyles(theme => ({
   },
   card: {
     position: "absolute",
-    "&:not(:first-child)": {
-    }
+    "&:not(:first-child)": {}
   }
 }));
 
@@ -24,8 +23,12 @@ function CardStack(props) {
   return (
     <div className={classes.cardStack}>
       {cards.map((card, index) => (
-        <div key={`${card.typ}${index}`} className={classes.card} style={{top: index * 23}}>
-          <Card type={card.typ} value={card.val} />
+        <div
+          key={`${card.typ}${index}`}
+          className={classes.card}
+          style={{ top: index * 23 }}
+        >
+          <Card type={card.typ} value={card.val} location={PLAYED} />
         </div>
       ))}
     </div>

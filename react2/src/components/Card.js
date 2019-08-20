@@ -1,7 +1,7 @@
 import React from "react";
 import PropTypes from "prop-types";
-import { makeStyles } from "@material-ui/core";
 
+import { makeStyles } from "@material-ui/core";
 import { useDrag } from "react-dnd";
 
 import { ItemTypes } from "../util/constants";
@@ -38,14 +38,15 @@ const useStyles = makeStyles(theme => ({
 }));
 
 function Card(props) {
-  const { type, value, position } = props;
+  const { type, value, position, location } = props;
   const classes = useStyles();
   const [{ isDragging }, drag] = useDrag({
     item: {
       type: type === "facedown" ? ItemTypes.FACE_DOWN : ItemTypes.FACE_UP,
       color: type,
       value,
-      position
+      position,
+      location
     },
     collect: monitor => ({
       isDragging: !!monitor.isDragging()
@@ -96,13 +97,19 @@ function Card(props) {
 Card.defaultProps = {
   type: "facedown",
   value: 0,
-  position: -1
+  position: -1,
+  location: 'deck'
 };
 
 Card.propTypes = {
   color: PropTypes.string,
   value: PropTypes.number,
-  position: PropTypes.number
+  position: PropTypes.number,
+  location: PropTypes.string
 };
 
+export const DECK = 'deck';
+export const HAND = 'hand';
+export const DISCARD = 'discard';
+export const PLAYED = 'played';
 export default Card;

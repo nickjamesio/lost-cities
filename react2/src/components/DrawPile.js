@@ -2,8 +2,8 @@ import React from "react";
 import { makeStyles } from "@material-ui/core";
 
 import CardCount from "./CardCount";
+import Card, { DECK } from "./Card";
 
-import Card from "./Card";
 const useStyles = makeStyles(theme => ({
   drawPile: {
     transform: "rotate(90deg)",
@@ -18,7 +18,7 @@ function DrawPile(props) {
   return cards.length ? (
     <div className={classes.drawPile}>
       <CardCount count={cards.length} drawPile>
-        <Card type="facedown" />
+        <Card type="facedown" location={DECK} />
       </CardCount>
     </div>
   ) : null;

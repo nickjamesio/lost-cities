@@ -4,7 +4,7 @@ import classnames from "classnames";
 
 import { useDrop } from "react-dnd";
 
-import Card from "./Card";
+import Card, { DISCARD } from "./Card";
 import CardCount from "./CardCount";
 import YellowDiscard from "../images/yellow_discard.png";
 import BlueDiscard from "../images/blue_discard.png";
@@ -13,10 +13,7 @@ import GreenDiscard from "../images/green_discard.png";
 import RedDiscard from "../images/red_discard.png";
 import { useGameSocket, useGameState } from "../context/GameContext";
 import { ItemTypes } from "../util/constants";
-import {
-  DISCARD_CARD,
-  DISCARD_DRAW,
-} from "../socket";
+import { DISCARD_CARD, DISCARD_DRAW } from "../socket";
 import Overlay from "./Overlay";
 
 const useStyles = makeStyles(theme => ({
@@ -33,7 +30,7 @@ const useStyles = makeStyles(theme => ({
   cardWrapper: {
     position: "absolute",
     zIndex: "1"
-  },
+  }
 }));
 
 export default function DiscardPile(props) {
@@ -51,7 +48,7 @@ export default function DiscardPile(props) {
       });
     },
     canDrop: (item, monitor) => {
-      return item.color == color && state.currentPlayer == state.position;
+      return item.color == color && state.currentPlayer == state.position && item.location !== DISCARD;
     },
     collect: monitor => ({
       isOver: monitor.isOver(),
@@ -90,12 +87,12 @@ export default function DiscardPile(props) {
       <div className={classes.cardWrapper}>
         {card ? (
           <CardCount count={cards.length}>
-            <Card type={card.typ} value={card.val} />
+            <Card type={card.typ} value={card.val} location={DISCARD} />
           </CardCount>
         ) : null}
       </div>
       {!isOver && canDrop && <Overlay color="black" />}
-      {isOver && canDrop && <Overlay color={color} />}
+      {isOver && canDrop && !card && <Overlay color={color} />}
     </div>
   );
 }

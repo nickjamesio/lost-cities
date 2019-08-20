@@ -1,7 +1,7 @@
 import React from "react";
 import { makeStyles } from "@material-ui/core";
 
-import Card from "../components/Card";
+import Card, { HAND } from "../components/Card";
 
 const useStyles = makeStyles(theme => ({
   root: {
@@ -59,9 +59,9 @@ const useStyles = makeStyles(theme => ({
 
 function renderCard(hidden, card, index) {
   return hidden ? (
-    <Card type="facedown" />
+    <Card type="facedown" location={HAND} />
   ) : (
-    <Card type={card.typ} value={card.val} position={index} />
+    <Card type={card.typ} value={card.val} position={index} location={HAND} />
   );
 }
 
@@ -73,9 +73,8 @@ function Hand(props) {
   cards.forEach((card, index) => {
     if (index < 4) {
       rowOne.push(renderCard(hidden, card, index));
-    }
-    else {
-      rowTwo.push(renderCard(hidden, card, index))
+    } else {
+      rowTwo.push(renderCard(hidden, card, index));
     }
   });
 
