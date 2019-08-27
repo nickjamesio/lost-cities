@@ -2,12 +2,19 @@ import React from "react";
 import { makeStyles } from "@material-ui/core";
 import PropTypes from "prop-types";
 import classnames from "classnames";
+import { useDrop } from "react-dnd";
+
+import { HAND } from "./Card";
+import { PLAY_CARD } from "../socket";
+import Overlay from "./Overlay";
+import { useGameState, useGameSocket } from "../context/GameContext";
+import { ItemTypes } from "../util/constants";
 
 const useStyles = makeStyles(theme => ({
   root: {
     backgroundColor: "rgba(0,0,0,0.4)",
     width: "90%",
-    minHeight: "200px",
+    minHeight: "100%",
     display: "flex",
     justifyContent: "center",
     alignItems: "center",
@@ -16,30 +23,56 @@ const useStyles = makeStyles(theme => ({
   opponent: {
     backgroundColor: "rgba(0,0,0,0)",
     transform: "rotate(180deg)"
-  },
-  highlight: {
-    backgroundColor: "rgba(0,255,0,0.3)"
   }
 }));
 
 function PlaySquare(props) {
-  const { highlight, children, opponent } = props;
+  const { children, opponent, color } = props;
+  const socket = useGameSocket();
+  const state = useGameState();
   const classes = useStyles();
   const rootStyles = classnames(
     classes.root,
-    opponent ? classes.opponent : null,
-    highlight ? classes.highlight : null
+    opponent ? classes.opponent : null
   );
+  const [{ isOver, canDrop }, drop] = useDrop({
+    accept: ItemTypes.FACE_UP,
+    drop: (item, monitor) => {
+      socket.emit(PLAY_CARD, {
+        gameId: state.gameId,
+        cardIndex: item.position
+      });
+    },
+    canDrop: (item, monitor) => {
+      return (
+        item.color == color &&
+        state.currentPlayer == state.position &&
+        item.location === HAND
+      );
+    },
+    collect: monitor => ({
+      isOver: monitor.isOver(),
+      canDrop: monitor.canDrop()
+    })
+  });
 
-  return <div className={rootStyles}>{children}</div>;
+  return (
+    <div className={rootStyles} ref={drop}>
+      {children}
+      {!isOver && canDrop && <Overlay color="black" />}
+      {isOver && canDrop && <Overlay color={color} />}
+    </div>
+  );
 }
 
 PlaySquare.defaultProps = {
-  highlight: false
+  opponent: false,
+  color: "rgba(0,0,0,0)"
 };
 
 PlaySquare.propTypes = {
-  highlight: PropTypes.bool
+  opponent: PropTypes.bool,
+  color: PropTypes.string
 };
 
 export default PlaySquare;

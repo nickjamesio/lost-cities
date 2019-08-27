@@ -44,7 +44,6 @@ function reducer(state, action) {
         ...action.data
       };
     case UPDATE_PLAYED:
-      console.log(action.data);
       return {
         ...state,
         ...action.data
@@ -56,7 +55,7 @@ function reducer(state, action) {
         ...action.data
       };
     case UPDATE_MY_INFO:
-      console.log(action.data);
+      console.log("Updat info" + action.data);
       return {
         ...state,
         ...action.data
@@ -102,11 +101,6 @@ export function GameProvider({ children }) {
 
   useEffect(() => {
     setSocket(configureSocket(dispatch));
-    // return () => {
-    //   if (socket) {
-    //     socket.disconnect();
-    //   }
-    // };
   }, []);
 
   return (

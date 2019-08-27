@@ -9,7 +9,7 @@ const useStyles = makeStyles(theme => ({
     flexDirection: "column",
     alignItems: "center",
     width: "100%",
-    height: "100%"
+    height: "100%",
   },
   card: {
     position: "absolute",
@@ -26,7 +26,7 @@ function CardStack(props) {
         <div
           key={`${card.typ}${index}`}
           className={classes.card}
-          style={{ top: index * 23 }}
+          style={{ top: index * 21 }}
         >
           <Card type={card.typ} value={card.val} location={PLAYED} />
         </div>

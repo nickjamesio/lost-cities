@@ -1,7 +1,12 @@
 import React from "react";
 import { makeStyles } from "@material-ui/core";
+import { useDrop } from "react-dnd";
 
-import Card, { HAND } from "../components/Card";
+import Card, { HAND, DECK, DISCARD } from "../components/Card";
+import { ItemTypes } from "../util/constants";
+import { DRAW_CARD, DISCARD_DRAW } from "../socket";
+import { useGameSocket, useGameState } from "../context/GameContext";
+import Overlay from "./Overlay";
 
 const useStyles = makeStyles(theme => ({
   root: {
@@ -57,29 +62,55 @@ const useStyles = makeStyles(theme => ({
   }
 }));
 
-function renderCard(hidden, card, index) {
-  return hidden ? (
-    <Card type="facedown" location={HAND} />
-  ) : (
-    <Card type={card.typ} value={card.val} position={index} location={HAND} />
-  );
-}
-
 function Hand(props) {
-  const { cards, hidden } = props;
+  const { cards } = props;
   const classes = useStyles();
+  const socket = useGameSocket();
+  const state = useGameState();
   const rowOne = [];
   const rowTwo = [];
+
+  // Hacky way to figure out which hand is the opponent's
+  const isOpponent = cards[0] && cards[0].typ === "facedown";
+  const [{ isOver, canDrop }, drop] = useDrop({
+    accept: [ItemTypes.FACE_DOWN, ItemTypes.FACE_UP],
+    drop: (item, monitor) => {
+      if (item.location === DECK) {
+        socket.emit(DRAW_CARD, {
+          gameId: state.gameId
+        });
+      }
+      if (item.location === DISCARD) {
+        socket.emit(DISCARD_DRAW, {
+          gameId: state.gameId,
+          color: item.color
+        });
+      }
+    },
+    canDrop: (item, monitor) => {
+      return (
+        state.currentPlayer == state.position &&
+        (item.location === DISCARD || item.location === DECK)
+      );
+    },
+    collect: monitor => {
+      return {
+        isOver: monitor.isOver(),
+        canDrop: monitor.canDrop()
+      };
+    }
+  });
+
   cards.forEach((card, index) => {
     if (index < 4) {
-      rowOne.push(renderCard(hidden, card, index));
+      rowOne.push(<Card type={card.typ} value={card.val} position={index} location={HAND} />);
     } else {
-      rowTwo.push(renderCard(hidden, card, index));
+      rowTwo.push(<Card type={card.typ} value={card.val} position={index} location={HAND} />);
     }
   });
 
   return (
-    <div className={classes.root}>
+    <div className={classes.root} ref={drop}>
       <div className={classes.row}>
         {rowOne.map((Card, index) => (
           <div key={`${index}`} className={classes.cardWrapperFull}>
@@ -101,6 +132,8 @@ function Hand(props) {
           </div>
         ))}
       </div>
+      {!isOpponent && !isOver && canDrop && <Overlay color="black" />}
+      {!isOpponent && isOver && canDrop && <Overlay color="green" />}
     </div>
   );
 }

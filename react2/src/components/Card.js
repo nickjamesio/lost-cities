@@ -21,7 +21,7 @@ const useStyles = makeStyles(theme => ({
     alignContent: "center",
     height: "150px",
     backgroundColor: "black",
-    padding: "0.5rem"
+    padding: "0.25rem"
   },
   img: {
     height: "calc(100% - 1rem)"
@@ -29,7 +29,7 @@ const useStyles = makeStyles(theme => ({
   valueContainer: {
     fontWeight: "bold",
     lineHeight: "1",
-    // fontSize: "1.4rem",
+    fontSize: ".8rem",
     display: "flex",
     justifyContent: "space-between",
     color: "white",

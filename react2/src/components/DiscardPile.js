@@ -1,10 +1,9 @@
 import React from "react";
 import { makeStyles } from "@material-ui/core";
 import classnames from "classnames";
-
 import { useDrop } from "react-dnd";
 
-import Card, { DISCARD } from "./Card";
+import Card, { DISCARD, HAND } from "./Card";
 import CardCount from "./CardCount";
 import YellowDiscard from "../images/yellow_discard.png";
 import BlueDiscard from "../images/blue_discard.png";
@@ -13,7 +12,7 @@ import GreenDiscard from "../images/green_discard.png";
 import RedDiscard from "../images/red_discard.png";
 import { useGameSocket, useGameState } from "../context/GameContext";
 import { ItemTypes } from "../util/constants";
-import { DISCARD_CARD, DISCARD_DRAW } from "../socket";
+import { DISCARD_CARD } from "../socket";
 import Overlay from "./Overlay";
 
 const useStyles = makeStyles(theme => ({
@@ -48,7 +47,7 @@ export default function DiscardPile(props) {
       });
     },
     canDrop: (item, monitor) => {
-      return item.color == color && state.currentPlayer == state.position && item.location !== DISCARD;
+      return item.color == color && state.currentPlayer == state.position && item.location === HAND;
     },
     collect: monitor => ({
       isOver: monitor.isOver(),

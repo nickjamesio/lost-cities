@@ -88,10 +88,10 @@ class Deck(CardStack):
         # have already been removed
         if position == 1:
             tmp_hand = self.stack[-15::2]
-            self.stack = self.stack[0:-15] + self.stack[-16::2]
+            self.stack = self.stack[0:-15] + self.stack[-14::2]
         else:
             tmp_hand = self.stack[-8:]
-            self.stack = self.stack[0:-9]
+            self.stack = self.stack[0:-8]
 
         hand = Hand()
         for card in tmp_hand:

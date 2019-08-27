@@ -54,7 +54,7 @@ const useStyles = makeStyles(theme => ({
     }
   },
   discardPile: {
-    height: "170px"
+    height: "160px"
   },
   playedWrapper: {
     display: "flex",
@@ -62,6 +62,7 @@ const useStyles = makeStyles(theme => ({
     alignItems: "center",
     flexGrow: 1,
     width: "100%",
+    overflow: "hidden",
     "&.opponent": {
       justifyContent: "flex-end"
     }
@@ -101,10 +102,10 @@ export default function Game(props) {
   useEffect(() => {
     // If page loaded or refreshed with /game/:id, the game
     // should be rehydrated
-    if (state.gameId === null) {
+    if (/[0-9]+/.test(gameId)) {
       socket.emit(INITIALIZE_GAME, { gameId });
     }
-  }, [gameId, state.gameId]);
+  }, [gameId]);
 
   return (
     <DndProvider backend={HTML5Backend}>
@@ -165,7 +166,7 @@ export default function Game(props) {
                   cards={state.discard[color]}
                 />
                 <div className={classes.playedWrapper}>
-                  <PlaySquare>
+                  <PlaySquare color={color}>
                     <CardStack cards={state.played[state.position][color]} />
                   </PlaySquare>
                 </div>
@@ -173,7 +174,7 @@ export default function Game(props) {
             ))}
           </Grid>
         </Grid>
-        <TestFrom />
+        {/* <TestFrom /> */}
       </section>
     </DndProvider>
   );
