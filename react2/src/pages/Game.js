@@ -13,12 +13,11 @@ import { INITIALIZE_GAME } from "../socket";
 import {
   useGameState,
   useGameSocket,
-  useGameDispatch
 } from "../context/GameContext";
 import Player from "../components/Player";
 import { DndProvider } from "react-dnd";
 import HTML5Backend from "react-dnd-html5-backend";
-import TestFrom from "../components/TestForm";
+// import TestFrom from "../components/TestForm";
 
 const useStyles = makeStyles(theme => ({
   root: {
@@ -96,7 +95,6 @@ export default function Game(props) {
   const classes = useStyles();
   const state = useGameState();
   const socket = useGameSocket();
-  const dispatch = useGameDispatch();
   const opponentPosition = (state.position % 2) + 1;
 
   useEffect(() => {
@@ -157,7 +155,7 @@ export default function Game(props) {
               <div key={color} className={classes.boardColumnWrapper}>
                 <div className={classnames(classes.playedWrapper, "opponent")}>
                   <PlaySquare opponent>
-                    <CardStack cards={state.played[opponentPosition][color]} />
+                    <CardStack opponent color={color} cards={state.played[opponentPosition][color]} />
                   </PlaySquare>
                 </div>
                 <DiscardPile
@@ -166,8 +164,8 @@ export default function Game(props) {
                   cards={state.discard[color]}
                 />
                 <div className={classes.playedWrapper}>
-                  <PlaySquare color={color}>
-                    <CardStack cards={state.played[state.position][color]} />
+                  <PlaySquare>
+                    <CardStack color={color} cards={state.played[state.position][color]} />
                   </PlaySquare>
                 </div>
               </div>

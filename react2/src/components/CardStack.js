@@ -1,7 +1,14 @@
 import React from "react";
+import PropTypes from "prop-types";
 import { makeStyles } from "@material-ui/core";
+import { useDrop } from "react-dnd";
 
+import Overlay from "./Overlay";
 import Card, { PLAYED } from "./Card";
+import { HAND } from "./Card";
+import { PLAY_CARD } from "../socket";
+import { useGameState, useGameSocket } from "../context/GameContext";
+import { ItemTypes } from "../util/constants";
 
 const useStyles = makeStyles(theme => ({
   cardStack: {
@@ -18,10 +25,36 @@ const useStyles = makeStyles(theme => ({
 }));
 
 function CardStack(props) {
-  const { cards } = props;
+  const { cards, color, opponent } = props;
   const classes = useStyles();
+  const socket = useGameSocket();
+  const state = useGameState();
+  const [{ isOver, canDrop }, drop] = useDrop({
+    accept: ItemTypes.FACE_UP,
+    drop: item => {
+      socket.emit(PLAY_CARD, {
+        gameId: state.gameId,
+        cardIndex: item.position
+      });
+    },
+    canDrop: item => {
+      const lastCard = cards.length > 0 ? cards[cards.length - 1] : {val: 0};
+      return (
+        item.color === color &&
+        state.currentPlayer === state.position &&
+        item.location === HAND &&
+        parseInt(item.value) > parseInt(lastCard.val) &&
+        !opponent
+      );
+    },
+    collect: monitor => ({
+      isOver: monitor.isOver(),
+      canDrop: monitor.canDrop()
+    })
+  });  
+
   return (
-    <div className={classes.cardStack}>
+    <div className={classes.cardStack} ref={drop}>
       {cards.map((card, index) => (
         <div
           key={`${card.typ}${index}`}
@@ -31,8 +64,19 @@ function CardStack(props) {
           <Card type={card.typ} value={card.val} location={PLAYED} />
         </div>
       ))}
+      {!isOver && canDrop && <Overlay color="black" />}
+      {isOver && canDrop && <Overlay color={color} />}
     </div>
   );
 }
+
+CardStack.defaultProps = {
+  opponent: false,
+};
+
+CardStack.propTypes = {
+  opponent: PropTypes.bool,
+  color: PropTypes.string.isRequired
+};
 
 export default CardStack;
