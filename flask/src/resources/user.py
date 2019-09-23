@@ -1,6 +1,5 @@
 from flask import jsonify
 from flask_restful import Resource, reqparse
-from src.models.user import UserModel
 from flask_jwt_extended import (
     create_access_token,
     create_refresh_token,
@@ -12,6 +11,9 @@ from flask_jwt_extended import (
     jwt_required,
     current_user
 )
+
+from src.models.user import UserModel
+from src import api
 
 
 class UserRegister(Resource):
@@ -126,3 +128,13 @@ class TokenRefresh(Resource):
         set_access_cookies(resp, new_token)
         
         return resp, 200
+
+
+# Register routes
+api.add_resource(UserRegister, '/register')
+api.add_resource(User, '/user/<int:uid>')
+api.add_resource(UserList, '/users')
+api.add_resource(UserLogin, '/login')
+api.add_resource(UserLogout, '/logout')
+api.add_resource(CurrentUser, '/me')
+api.add_resource(TokenRefresh, '/refresh')

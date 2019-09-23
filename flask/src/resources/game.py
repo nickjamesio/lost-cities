@@ -1,11 +1,14 @@
 from flask_restful import Resource, request, reqparse
-from src.models.game import GameModel
-from src.models.player import PlayerModel
 from flask_jwt_extended import (
     jwt_required,
     current_user,
     get_jwt_identity
 )
+
+from src import api
+from src.models.game import GameModel
+from src.models.player import PlayerModel
+
 
 class MyGame(Resource):
     @jwt_required
@@ -79,3 +82,5 @@ class GameList(Resource):
         return data
         # products = ProductModel.query.all()
         # return {'data': [product.json() for product in products]}, 200
+
+api.add_resource(MyGame, '/mygame/<int:gid>')

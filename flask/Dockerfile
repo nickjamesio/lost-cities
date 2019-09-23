@@ -1,16 +1,28 @@
-FROM python:3.7-alpine
+# base image
+FROM python:3.7.4-alpine
 
-RUN adduser -D api
+# install dependencies
+RUN apk update && \
+    apk add --virtual build-deps gcc python-dev musl-dev && \
+    apk add postgresql-dev && \
+    apk add netcat-openbsd
 
-WORKDIR /home/api
+# set working directory in container
+# if it does not exist, it will be created
+WORKDIR /usr/src/app
 
-RUN apk update && apk add --virtual build-dependencies build-base gcc
-
-COPY requirements.txt requirements.txt
+# add and install requirements
+COPY ./requirements.txt /usr/src/app/requirements.txt
 RUN pip install -r requirements.txt
 
-ENV FLASK_APP=src/app.py
-ENV FLASK_ENV=development
+# add entrypoint.sh
+# COPY ./entrypoint.sh /usr/src/app/entrypoint.sh
+# RUN chmod +x entrypoint.sh
 
-CMD ["flask", "run", "--host=0.0.0.0", "--port=80", "--with-threads"]
-# CMD ["python", "src"]
+# add app
+COPY . /usr/src/app
+
+# run server
+# CMD ["/usr/src/app/entrypoint.sh"]
+
+CMD ["flask", "run", "--host=0.0.0.0", "--with-threads"]

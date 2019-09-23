@@ -1,8 +1,5 @@
 import json
 from flask_restful import Resource, reqparse, request
-from src.models.game import GameModel
-from src.models.player import PlayerModel
-from src.util.cards import Card, Deck, Hand, PlayedCards, DiscardPile
 from flask_jwt_extended import (
     create_access_token,
     create_refresh_token,
@@ -13,6 +10,12 @@ from flask_jwt_extended import (
     unset_jwt_cookies,
     current_user
 )
+
+from src import api
+from src.models.game import GameModel
+from src.models.player import PlayerModel
+from src.util.cards import Card, Deck, Hand, PlayedCards, DiscardPile
+
 
 class Home(Resource):
     def get(self):
@@ -48,3 +51,5 @@ class Home(Resource):
             'hand': player.hand,
             'discard': game.discard_pile
         }
+
+api.add_resource(Home, '/')

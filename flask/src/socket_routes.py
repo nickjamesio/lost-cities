@@ -3,10 +3,6 @@ import functools
 from flask import request, jsonify
 from jwt import ExpiredSignatureError
 from flask_jwt_extended.exceptions import NoAuthorizationError
-from src.app import socketio
-from src.models.game import GameModel
-from src.models.player import PlayerModel
-from src.util.cards import Card, Hand, Deck, PlayedCards, DiscardPile
 from flask_socketio import (
     emit,
     join_room,
@@ -24,6 +20,11 @@ from flask_jwt_extended import (
     set_access_cookies,
     jwt_required
 )
+
+from src import socketio
+from src.models.game import GameModel
+from src.models.player import PlayerModel
+from src.util.cards import Card, Hand, Deck, PlayedCards, DiscardPile
 
 
 def authenticated_only(f):

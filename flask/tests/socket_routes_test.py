@@ -10,12 +10,15 @@ from flask_socketio import (
     Namespace,
     disconnect
 )
-from src.app import app, socketio
+from src import socketio, create_app
 from src.db import db
 from src.models.user import UserModel
 from src.models.game import GameModel
 from util.auth import AuthActions
 from util.data import TestData, game_data
+
+app = create_app()
+
 
 @socketio.on('blah')
 def stuff(data):
