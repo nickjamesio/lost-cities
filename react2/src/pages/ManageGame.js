@@ -90,7 +90,6 @@ function JoinGame(props) {
   function handleSubmit(e) {
     e.preventDefault();
     socket.emit(JOIN_GAME, { gameId: form.gameid, position: form.position });
-    navigate(`/game/${form.gameid}`);
   }
 
   return (

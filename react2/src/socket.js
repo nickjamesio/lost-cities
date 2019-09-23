@@ -51,6 +51,7 @@ function configureSocket(dispatch) {
   });
   socket.on("game_joined", data => {
     dispatch({ type: GAME_JOINED, data });
+    navigate(`/game/${data.gameId}`);
   });
   
   return socket;

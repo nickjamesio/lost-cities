@@ -106,8 +106,10 @@ def new_game(data):
             },
             'gameReady': False,
             'over': game.is_over,
-            'opponent': {},
-            'me': player.json()
+            'players': {
+                position: player.json(),
+                opponent_position: {}
+            },
          }
     )
 
@@ -152,14 +154,13 @@ def join_game(data):
     # the updated hand. We do not want every person in the game to know about our hand
     emit('update_my_info',
         {
-            'gameId': game.id,
             'hand': player.hand,
             'position': player.position,
-            'me': player.json()
         }
     )
     emit('game_joined',
         {
+            'gameId': game.id,
             'currentPlayer': game.current_player,
             'deck': game.draw_pile,
             'discard': game.discard_pile,
@@ -175,7 +176,10 @@ def join_game(data):
             },
             'gameReady': True if PlayerModel.query.with_parent(game).count() == 2 else False,
             'over': game.is_over,
-            'opponent': opponent.json() if opponent else {}
+            'players': {
+                position: player.json(),
+                opponent_position: opponent.json() if opponent else {}
+            },
         },
         room=game.id
     )
@@ -227,8 +231,10 @@ def initialize_game(data):
             },
             'gameReady': True if len(game.players) == 2 else False,
             'over': game.is_over,
-            'opponent': opponent.json() if opponent else {},
-            'me': player.json()
+            'players': {
+                player.position: player.json(),
+                opponent_position: opponent.json() if opponent else {}
+            },
         }
     )
 
@@ -256,6 +262,7 @@ def play_card(data):
         played_pile.add_card(hand.get_card(index))
         player.hand = hand.serialize()
         player.played = played_pile.serialize()
+        player.score = played_pile.get_total_score()
         player.save_to_db()
 
         opponent_position = (player.position % 2) + 1
@@ -275,7 +282,11 @@ def play_card(data):
                         'white': [],
                         'yellow': []
                     }
-                }
+                },
+                'players': {
+                    player.position: player.json(),
+                    opponent_position: opponent.json() if opponent else {}
+                },
             },
             room=game.id
         )

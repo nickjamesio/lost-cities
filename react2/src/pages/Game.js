@@ -127,14 +127,14 @@ export default function Game(props) {
               </div>
             </div>
             <Player
-              player={state.opponent}
+              player={state.players[opponentPosition]}
               active={state.position !== state.currentPlayer}
             />
             <div className={classes.drawPile}>
               <DrawPile cards={state.deck} />
             </div>
             <Player
-              player={state.me}
+              player={state.players[state.position]}
               active={state.position === state.currentPlayer}
             />
             <div className={classes.handWrapper}>

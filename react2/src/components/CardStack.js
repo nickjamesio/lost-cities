@@ -39,11 +39,13 @@ function CardStack(props) {
     },
     canDrop: item => {
       const lastCard = cards.length > 0 ? cards[cards.length - 1] : {val: 0};
+      const itemValue = item.value === 'h' ? 1 : parseInt(item.value);
+      const lastCardValue = lastCard.val === 'h' ? 1 : parseInt(lastCard.val);
       return (
         item.color === color &&
         state.currentPlayer === state.position &&
         item.location === HAND &&
-        parseInt(item.value) > parseInt(lastCard.val) &&
+        itemValue >= lastCardValue &&
         !opponent
       );
     },
