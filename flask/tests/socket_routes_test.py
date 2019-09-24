@@ -126,7 +126,7 @@ def test_join_game_new_player(auth, flask_app, app_client, app_context):
     assert len(received) == 2
     assert len(p1Hand['hand']) == 8
     assert p1GameData['currentPlayer'] == expectedData['current']
-    assert p1GameData['deck'] == (expectedData['deck'][0:-15] + expectedData['deck'][-16::2])
+    assert p1GameData['deck'] == (expectedData['deck'][0:-15] + expectedData['deck'][-14::2])
     assert p1GameData['over'] == expectedData['over']
     assert p1GameData['discard'] == {'red': [],
         'green': [],
