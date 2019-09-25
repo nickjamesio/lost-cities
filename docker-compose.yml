@@ -1,7 +1,7 @@
 version: '3.7'
 
 services:
-  # web:
+  # client:
   #  build:
   #    context: ./react
   #    dockerfile: Dockerfile
@@ -22,10 +22,22 @@ services:
     volumes:
       - ./flask:/usr/src/app
     environment:
-      - FLASK_APP=src
+      - FLASK_APP=src:create_app()
+      - FLASK_ENV=production
+      - APP_SETTINGS=src.config.DevelopmentConfig
+      - DATABASE_URL=postgres://postgres:postgres@db:5432/lostcities_dev
+    depends_on:
+      - db
 
+  db:
+    build:
+        context: ./flask/db
+        dockerfile: Dockerfile
+    ports:
+        - 5435:5432
+    expose:
+      - 5432
+    environment:
+        - POSTGRES_USER=postgres
+        - POSTGRES_PASSWORD=postgres
 
-# networks:
-#     default:
-#        external:
-#          name: nginx-proxy

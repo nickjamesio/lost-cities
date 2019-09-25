@@ -1,12 +1,25 @@
-FROM python:3.6-alpine
+# base image
+FROM python:3.7.2-alpine
 
-RUN adduser -D api
+# install dependencies
+RUN apk update && \
+    apk add --virtual build-deps gcc python-dev musl-dev && \
+    apk add postgresql-dev && \
+    apk add netcat-openbsd
 
-WORKDIR /home/api
+# set working directory
+WORKDIR /usr/src/app
 
-COPY requirements.txt requirements.txt
+# add and install requirements
+COPY ./requirements.txt /usr/src/app/requirements.txt
 RUN pip install -r requirements.txt
 
-COPY . .
+# add entrypoint-prod.sh
+COPY ./entrypoint-prod.sh /usr/src/app/entrypoint-prod.sh
+RUN chmod +x /usr/src/app/entrypoint-prod.sh
 
-CMD gunicorn -b 0.0.0.0:80 --access-logfile - --error-logfile - src:app
+# add app
+COPY . /usr/src/app
+
+# run server
+CMD ["/usr/src/app/entrypoint-prod.sh"]

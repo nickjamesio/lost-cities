@@ -16,13 +16,11 @@ COPY ./requirements.txt /usr/src/app/requirements.txt
 RUN pip install -r requirements.txt
 
 # add entrypoint.sh
-# COPY ./entrypoint.sh /usr/src/app/entrypoint.sh
-# RUN chmod +x entrypoint.sh
+COPY ./entrypoint.sh /usr/src/app/entrypoint.sh
+RUN chmod +x entrypoint.sh
 
 # add app
 COPY . /usr/src/app
 
 # run server
-# CMD ["/usr/src/app/entrypoint.sh"]
-
-CMD ["flask", "run", "--host=0.0.0.0", "--with-threads"]
+CMD ["/usr/src/app/entrypoint.sh"]
