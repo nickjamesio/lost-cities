@@ -19,6 +19,8 @@ services:
       dockerfile: Dockerfile
     ports:
       - 5000:5000
+    expose:
+      - 5000
     volumes:
       - ./flask:/usr/src/app
     environment:
@@ -40,4 +42,13 @@ services:
     environment:
         - POSTGRES_USER=postgres
         - POSTGRES_PASSWORD=postgres
+
+  nginx:
+    build:
+      context: ./nginx
+      dockerfile: Dockerfile
+    ports:
+      - 80:80
+    depends_on:
+      - api
 
