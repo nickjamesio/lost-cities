@@ -5,9 +5,7 @@ from flask_restful import Api
 from flask_cors import CORS
 from flask_socketio import SocketIO
 from flask_jwt_extended import JWTManager
-
-from src.db import db
-from src.models import user
+from flask_sqlalchemy import SQLAlchemy
 
 
 # instantiate the extensions
@@ -15,6 +13,7 @@ api = Api()
 socketio = SocketIO()
 jwt = JWTManager()
 cors = CORS()
+db = SQLAlchemy()
 
 
 @jwt.user_claims_loader
@@ -28,6 +27,7 @@ def user_loader_callback(identity):
     """
     Return current user or None if not found
     """
+    from src.models import user
     return user.UserModel.find_by_id(identity)
 
 @jwt.expired_token_loader
@@ -81,6 +81,8 @@ def create_app():
     # import routes and models here to prevent circular imports
     import src.socket_routes
     from src.resources import home, user, game
+    from src.models import user, game, player
+
 
     # set config
     app_settings = os.getenv('APP_SETTINGS', 'src.config.DevelopmentConfig')
@@ -90,7 +92,7 @@ def create_app():
     db.init_app(app)
     api.init_app(app)
     jwt.init_app(app)
-    cors.init_app(app, origins=["http://lostcities.local:3000"], supports_credentials=True)
-    socketio.init_app(app, cors_allowed_origins=["http://lostcities.local:3000"])
+    cors.init_app(app, origins=["http://lostcities.nick:3000", "http://lostcities.nick"], supports_credentials=True)
+    socketio.init_app(app, cors_allowed_origins=["http://lostcities.nick:3000", "http://lostcities.nick"])
 
     return app

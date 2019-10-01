@@ -1,6 +1,6 @@
 import json
 import functools
-from flask import request, jsonify
+from flask import request, jsonify, current_app
 from jwt import ExpiredSignatureError
 from flask_jwt_extended.exceptions import NoAuthorizationError
 from flask_socketio import (
@@ -34,6 +34,7 @@ def authenticated_only(f):
             verify_jwt_in_request()
         except NoAuthorizationError as e:
             emit('not authorized', {'message': str(e)})
+            current_app.logger.error("Disconnecting socket" + str(e))
             disconnect()
         else:
             return f(*args, **kwargs)
@@ -57,6 +58,13 @@ def default_error_handler(e):
 #     set_access_cookies(resp, new_token)
 
 #     return resp, 200
+# @socketio.on('connect', namespace='/game')
+# def connected():
+#     current_app.logger.error("Connected and shit")
+
+@socketio.on('disconnect', namespace='/game')
+def disconnected():
+    current_app.logger.error("Disconnected and shit")
 
 @socketio.on('new_game', namespace='/game')
 @authenticated_only

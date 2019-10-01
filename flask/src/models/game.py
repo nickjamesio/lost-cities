@@ -1,4 +1,4 @@
-from src.db import db
+from src import db
 from src.models.types.json_field import JSONEncoded
 
 
@@ -10,7 +10,7 @@ class GameModel(db.Model):
 
     id = db.Column(db.Integer, primary_key=True)
     current_player = db.Column(db.Integer, default=1)
-    draw_pile = db.Column(JSONEncoded(1000))
+    draw_pile = db.Column(JSONEncoded(1400))
     discard_pile = db.Column(JSONEncoded(1000), default={
         'red': [],
         'green': [],

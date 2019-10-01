@@ -8,4 +8,4 @@ done
 
 echo "PostgreSQL started"
 
-gunicorn -b 0.0.0.0:5000 "src:create_app()"
+gunicorn --worker-class eventlet -w 1 -b 0.0.0.0:5000 "src:create_app()"

@@ -1,4 +1,4 @@
-from src.db import db
+from src import db
 from src.models.types.json_field import JSONEncoded
 
 

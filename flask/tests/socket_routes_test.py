@@ -10,8 +10,7 @@ from flask_socketio import (
     Namespace,
     disconnect
 )
-from src import socketio, create_app
-from src.db import db
+from src import socketio, create_app, db
 from src.models.user import UserModel
 from src.models.game import GameModel
 from util.auth import AuthActions

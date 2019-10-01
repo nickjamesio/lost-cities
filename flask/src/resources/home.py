@@ -15,7 +15,7 @@ from src import api
 from src.models.game import GameModel
 from src.models.player import PlayerModel
 from src.util.cards import Card, Deck, Hand, PlayedCards, DiscardPile
-
+from flask import request
 
 class Home(Resource):
     def get(self):
@@ -23,33 +23,12 @@ class Home(Resource):
 
     @jwt_required
     def post(self):
-        # TODO confirm playerPosition is in data
-        # TODO if cannot find game, return error
-        # TODO do following checks
-        # check for player
-        # check for empty discard pile
         data = request.get_json()
         gameId = int(data['gameId'])
-        color = data['color']
-
-        game = GameModel.find_by_id(gameId)
-        player = PlayerModel.query.with_parent(game).filter(PlayerModel.position == game.current_player).first()
-        
-        discard = DiscardPile(game.discard_pile)
-        card = discard.get_card(color)
-        
-        hand = Hand(player.hand)
-        hand.add_card(card)
-
-        game.discard_pile = discard.serialize()
-        player.hand = hand.serialize()
-
-        player.save_to_db()
-        game.save_to_db()
 
         return {
-            'hand': player.hand,
-            'discard': game.discard_pile
+            'gameId': gameId,
+            'newData': 'shit stuff'
         }
 
 api.add_resource(Home, '/')

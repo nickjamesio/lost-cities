@@ -21,12 +21,12 @@ class DevelopmentConfig(BaseConfig):
     DEBUG_TB_ENABLED = True
     JWT_ACCESS_COOKIE_PATH = '/'
     JWT_REFRESH_COOKIE_PATH = '/'
+    JWT_COOKIE_DOMAIN="lostcities.nick"
     # TODO change this in future
     # https://flask-jwt-extended.readthedocs.io/en/latest/tokens_in_cookies.html
     JWT_COOKIE_CSRF_PROTECT = False
     #TODO make token expire after time elapses
     JWT_ACCESS_TOKEN_EXPIRES = False
-    # JWT_COOKIE_DOMAIN = 'nickjames.local'
 
 
 class TestingConfig(BaseConfig):
