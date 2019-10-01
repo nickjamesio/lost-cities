@@ -53,7 +53,6 @@ function Login(props) {
     if (result.code === 200) {
         setUser(result.data.user);
     } 
-    console.log(result);
   };
 
   return (

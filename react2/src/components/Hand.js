@@ -4,8 +4,7 @@ import { useDrop } from "react-dnd";
 
 import Card, { HAND, DECK, DISCARD } from "../components/Card";
 import { ItemTypes } from "../util/constants";
-import { DRAW_CARD, DISCARD_DRAW } from "../socket";
-import { useGameSocket } from "../context/GameSocketProvider";
+import { drawCard, drawDiscard } from "../socket";
 import { useGameState } from "../context/GameStateProvider";
 import Overlay from "./Overlay";
 
@@ -66,7 +65,6 @@ const useStyles = makeStyles(theme => ({
 function Hand(props) {
   const { cards } = props;
   const classes = useStyles();
-  const socket = useGameSocket();
   const state = useGameState();
   const rowOne = [];
   const rowTwo = [];
@@ -75,22 +73,17 @@ function Hand(props) {
   const isOpponent = cards[0] && cards[0].typ === "facedown";
   const [{ isOver, canDrop }, drop] = useDrop({
     accept: [ItemTypes.FACE_DOWN, ItemTypes.FACE_UP],
-    drop: (item, monitor) => {
+    drop: item => {
       if (item.location === DECK) {
-        socket.emit(DRAW_CARD, {
-          gameId: state.gameId
-        });
+        drawCard(state.gameId);
       }
-      if (item.location === DISCARD) {
-        socket.emit(DISCARD_DRAW, {
-          gameId: state.gameId,
-          color: item.color
-        });
+      else if (item.location === DISCARD) {
+        drawDiscard(state.gameId, item.color);
       }
     },
-    canDrop: (item, monitor) => {
+    canDrop: item => {
       return (
-        state.currentPlayer == state.position &&
+        state.currentPlayer === state.position &&
         (item.location === DISCARD || item.location === DECK)
       );
     },

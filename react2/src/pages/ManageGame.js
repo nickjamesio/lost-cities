@@ -11,8 +11,7 @@ import Typography from "@material-ui/core/Typography";
 import TextField from "@material-ui/core/TextField";
 
 import { useFormFields } from "../hooks/forms";
-import { useGameSocket } from "../context/GameSocketProvider";
-import { NEW_GAME, JOIN_GAME } from "../socket";
+import { newGame, joinGame } from "../socket";
 
 const useNewStyles = makeStyles(theme => ({
   root: {
@@ -32,13 +31,12 @@ const useNewStyles = makeStyles(theme => ({
 }));
 
 function NewGame(props) {
-  const socket = useGameSocket();
   const classes = useNewStyles();
   const [form, handleChange] = useFormFields({ position: "1" });
 
   function handleSubmit(e) {
     e.preventDefault();
-    socket.emit(NEW_GAME, { position: form.position });
+    newGame(form.position);
   }
 
   return (
@@ -83,12 +81,11 @@ const useJoinStyles = makeStyles(theme => ({
 
 function JoinGame(props) {
   const classes = useJoinStyles();
-  const socket = useGameSocket();
   const [form, handleChange] = useFormFields({ gameid: "", position: "1" });
 
   function handleSubmit(e) {
     e.preventDefault();
-    socket.emit(JOIN_GAME, { gameId: form.gameid, position: form.position }, (data) => {console.log(data)});
+    joinGame(form.gameid, form.position);
   }
 
   return (

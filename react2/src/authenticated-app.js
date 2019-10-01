@@ -5,7 +5,6 @@ import PageLayout from "./components/PageLayout";
 import Game from "./pages/Game";
 import ManageGame from "./pages/ManageGame";
 import { GameStateProvider } from "./context/GameStateProvider";
-import { GameSocketProvider } from "./context/GameSocketProvider";
 
 function AuthenticatedApp(props) {
   return (

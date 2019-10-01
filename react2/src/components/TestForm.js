@@ -8,12 +8,12 @@ import {
   TextField,
   makeStyles
 } from "@material-ui/core";
-import { useGameSocket, useGameState } from "../context/GameStateProvider";
+import { useGameState } from "../context/GameStateProvider";
 import {
-  PLAY_CARD,
-  DRAW_CARD,
-  DISCARD_CARD,
-  DISCARD_DRAW,
+  playCard,
+  drawCard,
+  drawDiscard,
+  discardCard,
 } from "../socket";
 
 const useStyles = makeStyles(theme => ({
@@ -36,38 +36,26 @@ const useStyles = makeStyles(theme => ({
 
 function TestForm(props) {
   const classes = useStyles();
-  const [playCard, handlePlay] = useFormFields({ position: 0 });
-  const [discardCard, handleDiscard] = useFormFields({ position: 0 });
+  const [play, handlePlay] = useFormFields({ position: 0 });
+  const [discard, handleDiscard] = useFormFields({ position: 0 });
   const [discardDraw, handleDiscardDraw] = useFormFields({ color: "" });
-  const socket = useGameSocket();
   const state = useGameState();
 
   function handlePlaySubmit(e) {
     e.preventDefault();
-    socket.emit(PLAY_CARD, {
-      gameId: state.gameId,
-      cardIndex: playCard.position
-    });
+    playCard(state.gameId, play.position);
   }
   function handleDiscardSubmit(e) {
     e.preventDefault();
-    socket.emit(DISCARD_CARD, {
-      gameId: state.gameId,
-      cardIndex: discardCard.position
-    });
+    discardCard(state.gameId, discard.position);
   }
   function handleDrawSubmit(e) {
     e.preventDefault();
-    socket.emit(DRAW_CARD, {
-      gameId: state.gameId
-    });
+    drawCard(state.gameId);
   }
   function handleDiscardDrawSubmit(e) {
     e.preventDefault();
-    socket.emit(DISCARD_DRAW, {
-      gameId: state.gameId,
-      color: discardDraw.color,
-    });
+    drawDiscard(state.gameId, discardDraw.color);
   }
 
   return (
@@ -78,7 +66,7 @@ function TestForm(props) {
           label="Index"
           name="position"
           className={classes.textField}
-          value={playCard.position}
+          value={play.position}
           onChange={handlePlay}
           margin="normal"
           variant="outlined"
@@ -97,7 +85,7 @@ function TestForm(props) {
           label="Index"
           name="position"
           className={classes.textField}
-          value={discardCard.position}
+          value={discard.position}
           onChange={handleDiscard}
           margin="normal"
           variant="outlined"

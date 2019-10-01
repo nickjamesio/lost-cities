@@ -1,8 +1,4 @@
-import React, {
-  createContext,
-  useContext,
-  useState,
-} from "react";
+import React, { createContext, useContext } from "react";
 
 import configureSocket from "../socket";
 
@@ -10,6 +6,7 @@ const GameSocketContext = createContext();
 
 export function GameSocketProvider({ children, dispatch }) {
   const socket = configureSocket(dispatch);
+
 
   return (
     <GameSocketContext.Provider value={socket}>

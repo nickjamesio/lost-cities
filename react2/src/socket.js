@@ -1,4 +1,5 @@
 import io from "socket.io-client";
+import { navigate } from "@reach/router";
 import {
   UPDATE_HAND,
   UPDATE_DISCARD,
@@ -8,18 +9,18 @@ import {
   GAME_CREATED,
   GAME_JOINED
 } from "./context/GameStateProvider";
-import { navigate } from "@reach/router";
 import { URL } from "./util/constants";
 
-function configureSocket(dispatch) {
-  const socket = io(`${URL}/game`);
+let socket = io(`${URL}/game`, {autoConnect: false});
 
-  // make sure our socket is connected to the port
+export default function configureSocket(dispatch) {
+  socket.open();
+  // make sure our socket is connected
   socket.on("connect", () => {
     console.log("connected");
   });
 
-  socket.on("disconnect", (reason) => {
+  socket.on("disconnect", reason => {
     console.log(`connection deleted ${reason}`);
   });
 
@@ -53,18 +54,34 @@ function configureSocket(dispatch) {
     dispatch({ type: GAME_JOINED, data });
     navigate(`/game/${data.gameId}`);
   });
-  
+
   return socket;
-};
+}
 
-// cosntants to be used in place of the event parameter when sending
-// data to the server using socket.emit()
-export const NEW_GAME = "new_game";
-export const JOIN_GAME = "join_game";
-export const PLAY_CARD = "play_card";
-export const DISCARD_CARD = "discard_card";
-export const DRAW_CARD = "draw_card";
-export const DISCARD_DRAW = "draw_discard";
-export const INITIALIZE_GAME = "initialize_game";
+export function initializeGame(gameId) {
+  socket.emit("initialize_game", { gameId });
+}
 
-export default configureSocket;
+export function newGame(position) {
+  socket.emit("new_game", { position });
+}
+
+export function joinGame(gameId, position) {
+  socket.emit("join_game", { gameId, position });
+}
+
+export function playCard(gameId, cardIndex) {
+  socket.emit("play_card", { gameId, cardIndex });
+}
+
+export function discardCard(gameId, cardIndex) {
+  socket.emit("discard_card", { gameId, cardIndex });
+}
+
+export function drawCard(gameId) {
+  socket.emit("draw_card", { gameId });
+}
+
+export function drawDiscard(gameId, color) {
+  socket.emit("draw_discard", { gameId, color });
+}

@@ -9,8 +9,7 @@ import PlaySquare from "../components/PlaySquare";
 import Hand from "../components/Hand";
 import DrawPile from "../components/DrawPile";
 import CardStack from "../components/CardStack";
-import { INITIALIZE_GAME } from "../socket";
-import { useGameSocket } from "../context/GameSocketProvider";
+import { initializeGame } from "../socket";
 import { useGameState } from "../context/GameStateProvider";
 import Player from "../components/Player";
 import { DndProvider } from "react-dnd";
@@ -92,14 +91,13 @@ export default function Game(props) {
   const { id: gameId } = props;
   const classes = useStyles();
   const state = useGameState();
-  const socket = useGameSocket();
   const opponentPosition = (state.position % 2) + 1;
 
   useEffect(() => {
     // If page loaded or refreshed with /game/:id, the game
     // should be rehydrated
     if (/[0-9]+/.test(gameId)) {
-      socket.emit(INITIALIZE_GAME, { gameId });
+      initializeGame(gameId);
     }
   }, [gameId]);
 

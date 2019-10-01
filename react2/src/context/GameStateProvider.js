@@ -1,6 +1,6 @@
-import React, { createContext, useContext, useReducer } from "react";
+import React, { createContext, useContext, useReducer, useEffect } from "react";
 
-import { GameSocketProvider } from "./GameSocketProvider";
+import configureSocket from "../socket";
 
 export const UPDATE_HAND = 0;
 export const UPDATE_DISCARD = 1;
@@ -87,14 +87,18 @@ export function GameStateProvider({ children }) {
     }
   });
 
+  useEffect(() => {
+    const socket = configureSocket(dispatch);
+    
+    return () => socket.close();
+  }, []);
+
   return (
-    <GameSocketProvider dispatch={dispatch}>
       <GameStateContext.Provider value={state}>
         <GameDispatchContext.Provider value={dispatch}>
           {children}
         </GameDispatchContext.Provider>
       </GameStateContext.Provider>
-    </GameSocketProvider>
   );
 }
 

@@ -6,8 +6,7 @@ import { useDrop } from "react-dnd";
 import Overlay from "./Overlay";
 import Card, { PLAYED } from "./Card";
 import { HAND } from "./Card";
-import { PLAY_CARD } from "../socket";
-import { useGameSocket } from "../context/GameSocketProvider";
+import { playCard } from "../socket";
 import { useGameState } from "../context/GameStateProvider";
 import { ItemTypes } from "../util/constants";
 
@@ -28,15 +27,11 @@ const useStyles = makeStyles(theme => ({
 function CardStack(props) {
   const { cards, color, opponent } = props;
   const classes = useStyles();
-  const socket = useGameSocket();
   const state = useGameState();
   const [{ isOver, canDrop }, drop] = useDrop({
     accept: ItemTypes.FACE_UP,
     drop: item => {
-      socket.emit(PLAY_CARD, {
-        gameId: state.gameId,
-        cardIndex: item.position
-      });
+      playCard(state.gameId, item.position);
     },
     canDrop: item => {
       const lastCard = cards.length > 0 ? cards[cards.length - 1] : {val: 0};

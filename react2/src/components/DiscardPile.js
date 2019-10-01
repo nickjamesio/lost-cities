@@ -10,10 +10,9 @@ import BlueDiscard from "../images/blue_discard.png";
 import WhiteDiscard from "../images/white_discard.png";
 import GreenDiscard from "../images/green_discard.png";
 import RedDiscard from "../images/red_discard.png";
-import { useGameSocket } from "../context/GameSocketProvider";
 import { useGameState } from "../context/GameStateProvider";
 import { ItemTypes } from "../util/constants";
-import { DISCARD_CARD } from "../socket";
+import { discardCard } from "../socket";
 import Overlay from "./Overlay";
 
 const useStyles = makeStyles(theme => ({
@@ -36,18 +35,14 @@ const useStyles = makeStyles(theme => ({
 export default function DiscardPile(props) {
   const { color, cards, className: classNameProp } = props;
   const classes = useStyles();
-  const socket = useGameSocket();
   const state = useGameState();
   const card = cards.length ? cards[cards.length - 1] : null;
   const [{ isOver, canDrop }, drop] = useDrop({
     accept: ItemTypes.FACE_UP,
-    drop: (item, monitor) => {
-      socket.emit(DISCARD_CARD, {
-        gameId: state.gameId,
-        cardIndex: item.position
-      });
+    drop: item => {
+      discardCard(state.gameId,item.position);
     },
-    canDrop: (item, monitor) => {
+    canDrop: item => {
       return item.color == color && state.currentPlayer == state.position && item.location === HAND;
     },
     collect: monitor => ({
@@ -92,7 +87,7 @@ export default function DiscardPile(props) {
         ) : null}
       </div>
       {!isOver && canDrop && <Overlay color="black" />}
-      {isOver && canDrop && !card && <Overlay color={color} />}
+      {isOver && canDrop && <Overlay color={color} />}
     </div>
   );
 }

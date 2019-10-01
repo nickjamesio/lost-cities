@@ -53,7 +53,6 @@ function SignUp() {
     if (result.code === 201) {
       navigate('/')
     }
-    console.log(result);
   };
 
   return (
