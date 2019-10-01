@@ -8,7 +8,7 @@ import {
   TextField,
   makeStyles
 } from "@material-ui/core";
-import { useGameSocket, useGameState } from "../context/GameContext";
+import { useGameSocket, useGameState } from "../context/GameStateProvider";
 import {
   PLAY_CARD,
   DRAW_CARD,

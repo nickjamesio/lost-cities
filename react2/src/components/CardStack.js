@@ -7,7 +7,8 @@ import Overlay from "./Overlay";
 import Card, { PLAYED } from "./Card";
 import { HAND } from "./Card";
 import { PLAY_CARD } from "../socket";
-import { useGameState, useGameSocket } from "../context/GameContext";
+import { useGameSocket } from "../context/GameSocketProvider";
+import { useGameState } from "../context/GameStateProvider";
 import { ItemTypes } from "../util/constants";
 
 const useStyles = makeStyles(theme => ({
@@ -53,7 +54,7 @@ function CardStack(props) {
       isOver: monitor.isOver(),
       canDrop: monitor.canDrop()
     })
-  });  
+  });
 
   return (
     <div className={classes.cardStack} ref={drop}>

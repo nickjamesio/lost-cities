@@ -10,10 +10,8 @@ import Hand from "../components/Hand";
 import DrawPile from "../components/DrawPile";
 import CardStack from "../components/CardStack";
 import { INITIALIZE_GAME } from "../socket";
-import {
-  useGameState,
-  useGameSocket,
-} from "../context/GameContext";
+import { useGameSocket } from "../context/GameSocketProvider";
+import { useGameState } from "../context/GameStateProvider";
 import Player from "../components/Player";
 import { DndProvider } from "react-dnd";
 import HTML5Backend from "react-dnd-html5-backend";

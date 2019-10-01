@@ -53,10 +53,6 @@ function Card(props) {
     })
   });
 
-  if (isDragging) {
-    console.log(`Dragging "${type}" card with value "${value}"`)
-  }
-
   let imgSrc = "";
   switch (type) {
     case "red":

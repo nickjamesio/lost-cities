@@ -1,12 +1,6 @@
-import React, {
-  createContext,
-  useContext,
-  useEffect,
-  useReducer,
-  useState
-} from "react";
+import React, { createContext, useContext, useReducer } from "react";
 
-import configureSocket from "../socket";
+import { GameSocketProvider } from "./GameSocketProvider";
 
 export const UPDATE_HAND = 0;
 export const UPDATE_DISCARD = 1;
@@ -18,27 +12,22 @@ export const GAME_JOINED = 6;
 
 const GameStateContext = createContext();
 const GameDispatchContext = createContext();
-const GameSocketContext = createContext();
 
 function reducer(state, action) {
   switch (action.type) {
     case GAME_CREATED:
-      console.log(action.data);
       return action.data;
     case GAME_JOINED:
-      console.log(action.data);
       return {
         ...state,
         ...action.data
       };
     case UPDATE_HAND:
-      console.log(action.data);
       return {
         ...state,
         ...action.data
       };
     case UPDATE_DISCARD:
-      console.log(action.data);
       return {
         ...state,
         ...action.data
@@ -49,13 +38,11 @@ function reducer(state, action) {
         ...action.data
       };
     case UPDATE_DRAW_PILE:
-      console.log(action.data);
       return {
         ...state,
         ...action.data
       };
     case UPDATE_MY_INFO:
-      console.log("Updat info" + action.data);
       return {
         ...state,
         ...action.data
@@ -65,7 +52,7 @@ function reducer(state, action) {
   }
 }
 
-export function GameProvider({ children }) {
+export function GameStateProvider({ children }) {
   const [state, dispatch] = useReducer(reducer, {
     gameId: null,
     hand: [],
@@ -99,29 +86,16 @@ export function GameProvider({ children }) {
       "2": {}
     }
   });
-  const [socket, setSocket] = useState(null);
-
-  useEffect(() => {
-    setSocket(configureSocket(dispatch));
-  }, []);
 
   return (
-    <GameSocketContext.Provider value={socket}>
+    <GameSocketProvider dispatch={dispatch}>
       <GameStateContext.Provider value={state}>
         <GameDispatchContext.Provider value={dispatch}>
           {children}
         </GameDispatchContext.Provider>
       </GameStateContext.Provider>
-    </GameSocketContext.Provider>
+    </GameSocketProvider>
   );
-}
-
-export function useGameSocket() {
-  const context = useContext(GameSocketContext);
-  if (context === undefined) {
-    throw new Error(`useGameSocket must be used within a GameProvider`);
-  }
-  return context;
 }
 
 export function useGameDispatch() {

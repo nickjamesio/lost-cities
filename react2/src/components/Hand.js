@@ -5,7 +5,8 @@ import { useDrop } from "react-dnd";
 import Card, { HAND, DECK, DISCARD } from "../components/Card";
 import { ItemTypes } from "../util/constants";
 import { DRAW_CARD, DISCARD_DRAW } from "../socket";
-import { useGameSocket, useGameState } from "../context/GameContext";
+import { useGameSocket } from "../context/GameSocketProvider";
+import { useGameState } from "../context/GameStateProvider";
 import Overlay from "./Overlay";
 
 const useStyles = makeStyles(theme => ({

@@ -9,10 +9,9 @@ import FormLabel from "@material-ui/core/FormLabel";
 import Paper from "@material-ui/core/Paper";
 import Typography from "@material-ui/core/Typography";
 import TextField from "@material-ui/core/TextField";
-import { navigate } from "@reach/router";
 
 import { useFormFields } from "../hooks/forms";
-import { useGameSocket } from "../context/GameContext";
+import { useGameSocket } from "../context/GameSocketProvider";
 import { NEW_GAME, JOIN_GAME } from "../socket";
 
 const useNewStyles = makeStyles(theme => ({
@@ -89,7 +88,7 @@ function JoinGame(props) {
 
   function handleSubmit(e) {
     e.preventDefault();
-    socket.emit(JOIN_GAME, { gameId: form.gameid, position: form.position });
+    socket.emit(JOIN_GAME, { gameId: form.gameid, position: form.position }, (data) => {console.log(data)});
   }
 
   return (

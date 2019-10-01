@@ -19,6 +19,7 @@ function App() {
     }
     fetchData();
   }, [setUser]);
+  console.log("Render App");
 
   return (
     <CustomTheme>

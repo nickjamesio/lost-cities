@@ -7,7 +7,7 @@ import {
   UPDATE_MY_INFO,
   GAME_CREATED,
   GAME_JOINED
-} from "./context/GameContext";
+} from "./context/GameStateProvider";
 import { navigate } from "@reach/router";
 import { URL } from "./util/constants";
 
@@ -19,8 +19,8 @@ function configureSocket(dispatch) {
     console.log("connected");
   });
 
-  socket.on("disconnect", () => {
-    console.log("connection deleted");
+  socket.on("disconnect", (reason) => {
+    console.log(`connection deleted ${reason}`);
   });
 
   // the socket.on method is like an event listener
