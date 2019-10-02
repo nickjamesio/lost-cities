@@ -2,6 +2,8 @@ import React, { useEffect } from "react";
 import { makeStyles } from "@material-ui/core";
 import { Grid } from "@material-ui/core";
 import classnames from "classnames";
+import { DndProvider } from "react-dnd";
+import HTML5Backend from "react-dnd-html5-backend";
 
 import Background from "../images/background.png";
 import DiscardPile from "../components/DiscardPile";
@@ -12,8 +14,7 @@ import CardStack from "../components/CardStack";
 import { initializeGame } from "../socket";
 import { useGameState } from "../context/GameStateProvider";
 import Player from "../components/Player";
-import { DndProvider } from "react-dnd";
-import HTML5Backend from "react-dnd-html5-backend";
+import GameOverDialog from "../components/GameOverDialog";
 // import TestFrom from "../components/TestForm";
 
 const useStyles = makeStyles(theme => ({
@@ -169,6 +170,7 @@ export default function Game(props) {
           </Grid>
         </Grid>
         {/* <TestFrom /> */}
+        <GameOverDialog isOver={state.over} />
       </section>
     </DndProvider>
   );

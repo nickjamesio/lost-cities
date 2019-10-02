@@ -364,6 +364,7 @@ def draw_card(data):
         player.hand = hand.serialize()
         game.draw_pile = deck.serialize()
         game.current_player = (game.current_player % 2) + 1
+        game.is_over = True if len(deck) == 0 else False
 
         game.save_to_db()
         player.save_to_db()

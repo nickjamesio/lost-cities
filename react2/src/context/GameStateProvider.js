@@ -84,7 +84,8 @@ export function GameStateProvider({ children }) {
     players: {
       "1": {},
       "2": {}
-    }
+    },
+    over: false
   });
 
   useEffect(() => {

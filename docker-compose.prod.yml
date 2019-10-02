@@ -21,7 +21,7 @@ services:
     environment:
       - FLASK_ENV=production
       - APP_SETTINGS=src.config.ProductionConfig
-      - DATABASE_URL=postgres://postgres:postgres@db:5432/lostcities_dev
+      - DATABASE_URL=postgres://postgres:postgres@db:5432/lostcities_prod
     depends_on:
       - db
     
