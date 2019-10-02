@@ -170,7 +170,7 @@ export default function Game(props) {
           </Grid>
         </Grid>
         {/* <TestFrom /> */}
-        <GameOverDialog isOver={state.over} />
+        <GameOverDialog isOver={state.over} players={state.players} />
       </section>
     </DndProvider>
   );

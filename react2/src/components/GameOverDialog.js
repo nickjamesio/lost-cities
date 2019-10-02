@@ -1,38 +1,31 @@
-import React, { useState, useEffect } from 'react';
+import React from 'react';
 import PropTypes from 'prop-types';
-import { makeStyles } from '@material-ui/core/styles';
 import DialogTitle from '@material-ui/core/DialogTitle';
 import DialogContent from '@material-ui/core/DialogContent';
 import Dialog from '@material-ui/core/Dialog';
+import { Typography } from '@material-ui/core';
 
-const useStyles = makeStyles({
-  avatar: {
-    
-  },
-});
 
 export default function GameOverDialog(props) {
-  const { isOver } = props;
-  const classes = useStyles();
-  const [open, setOpen] = useState(false);
+  const { isOver, players } = props;
+  const p1 = players["1"];
+  const p2 = players["2"];
+  const p1Name = p1.username ? p1.username : "";
+  const p2Name = p1.username ? p2.username : "";
+  let winner = "Tie game!";
 
-  useEffect(() => {
-    setOpen(isOver)
-  }, [isOver]);
-
-  const handleClickOpen = () => {
-    setOpen(true);
-  };
-
-  const handleClose = value => {
-    setOpen(false);
-  };
+  if (p1.score && p2.score && p1.score > p2.score) {
+    winner = `Winner: ${p1Name}`;
+  }
+  else if (p1.score && p2.score && p2.score > p1.score) {
+    winner = `Winner: ${p2Name}`;
+  }
 
   return (
-    <Dialog onClose={handleClose} aria-labelledby="simple-dialog-title" open={open}>
+    <Dialog aria-labelledby="simple-dialog-title" open={isOver}>
       <DialogTitle id="simple-dialog-title">GAME OVER</DialogTitle>
       <DialogContent>
-          Some content
+        <Typography>{winner}</Typography>
       </DialogContent>
     </Dialog>
   );
