@@ -6,7 +6,7 @@ FROM node:12.7.0-alpine as builder
 WORKDIR /app
 ENV PATH /app/node_modules/.bin:$PATH
 ENV NODE_ENV production
-ENV REACT_APP_API_URL http://lostcities.local/api
+ENV REACT_APP_API_URL http://lostcities.nickjames.io/api
 COPY ./package*.json ./
 RUN npm install
 RUN npm install react-scripts@3.0.1

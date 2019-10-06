@@ -37,7 +37,16 @@ class TestingConfig(BaseConfig):
     SQLALCHEMY_DATABASE_URI = os.environ.get('DATABASE_URL') or 'sqlite:///' + os.path.join(basedir, 'data.db')
 
 
-
 class ProductionConfig(BaseConfig):
     """Production configuration"""
     SQLALCHEMY_DATABASE_URI = os.environ.get('DATABASE_URL')
+    JWT_ACCESS_COOKIE_PATH = '/'
+    JWT_REFRESH_COOKIE_PATH = '/'
+    JWT_COOKIE_DOMAIN="http://lostcities.nickjames.io"
+    CORS_ORIGINS=["http://lostcities.nickjames.io"]
+    CORS_SUPPORTS_CREDENTIALS=True
+    # TODO change this in future
+    # https://flask-jwt-extended.readthedocs.io/en/latest/tokens_in_cookies.html
+    JWT_COOKIE_CSRF_PROTECT = False
+    #TODO make token expire after time elapses
+    JWT_ACCESS_TOKEN_EXPIRES = False

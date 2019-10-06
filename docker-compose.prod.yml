@@ -5,12 +5,11 @@ services:
     build:
       context: ./react
       dockerfile: Dockerfile-prod
+      # args:
+      #   - REACT_APP_API_URL:http://lostcities.local/api
     restart: unless-stopped
     expose:
       - 80 
-    environment:
-      - NODE_ENV=production
-      - REACT_APP_API_URL=http://lostcities.local/api
     depends_on:
       - api
 
