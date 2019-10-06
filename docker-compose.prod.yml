@@ -1,16 +1,19 @@
 version: '3.5'
 
 services:
-  # web:
-  #   build:
-  #     context: ./react
-  #     dockerfile: Dockerfile.prod
-  #   restart: unless-stopped
-  #   logging:
-  #     driver: syslog
-  #   expose:
-  #     - '80'
-      
+  client:
+    build:
+      context: ./react
+      dockerfile: Dockerfile-prod
+    restart: unless-stopped
+    expose:
+      - 80 
+    environment:
+      - NODE_ENV=production
+      - REACT_APP_API_URL=http://lostcities.local/api
+    depends_on:
+      - api
+
   api:
     build:
       context: ./flask
@@ -29,6 +32,7 @@ services:
     build:
         context: ./flask/db
         dockerfile: Dockerfile
+    restart: unless-stopped    
     expose:
         - 5432
     environment:
@@ -39,8 +43,9 @@ services:
     build:
       context: ./nginx
       dockerfile: Dockerfile-prod
-    restart: always
+    restart: unless-stopped
     ports:
       - 80:80
     depends_on:
       - api
+      - client

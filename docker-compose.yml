@@ -1,17 +1,20 @@
 version: '3.7'
 
 services:
-  # client:
-  #  build:
-  #    context: ./react
-  #    dockerfile: Dockerfile
-  #  expose:
-  #    - '80'
-  #  volumes:
-  #    - ~/Projects/lost_cities/react:/app
-  #  environment:
-  #     VIRTUAL_HOST: localhost,www.localhost
-  #     VIRTUAL_PORT: 3000
+  client:
+    build:
+      context: ./react
+      dockerfile: Dockerfile
+    volumes:
+      - './react:/usr/src/app'
+      - '/usr/src/app/node_modules'
+    ports:
+      - 3000:3000
+    environment:
+      - NODE_ENV=development
+      - REACT_APP_API_URL=http://lostcities.local
+    depends_on:
+      - api
 
   api:
     build:
@@ -36,7 +39,7 @@ services:
         context: ./flask/db
         dockerfile: Dockerfile
     ports:
-        - 5435:5432
+        - 5432:5432
     expose:
       - 5432
     environment:
@@ -51,4 +54,5 @@ services:
       - 80:80
     depends_on:
       - api
+      - client
 

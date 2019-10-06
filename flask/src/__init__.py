@@ -92,7 +92,7 @@ def create_app():
     db.init_app(app)
     api.init_app(app)
     jwt.init_app(app)
-    cors.init_app(app, origins=["http://lostcities.nick:3000", "http://lostcities.nick"], supports_credentials=True)
-    socketio.init_app(app, cors_allowed_origins=["http://lostcities.nick:3000", "http://lostcities.nick"])
+    cors.init_app(app)
+    socketio.init_app(app, cors_allowed_origins=["http://lostcities.local:3000", "http://lostcities.local"])
 
     return app

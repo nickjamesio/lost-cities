@@ -1,0 +1,33 @@
+###########
+# BUILDER #
+###########
+
+FROM node:12.7.0-alpine as builder
+WORKDIR /app
+ENV PATH /app/node_modules/.bin:$PATH
+ENV NODE_ENV production
+ENV REACT_APP_API_URL http://lostcities.local/api
+COPY ./package*.json ./
+RUN npm install
+RUN npm install react-scripts@3.0.1
+
+# create build
+COPY . .
+RUN npm run build
+
+
+#########
+# FINAL #
+#########
+
+# base image
+FROM nginx:1.15.9-alpine
+
+# copy static files
+COPY --from=builder /app/build /usr/share/nginx/html
+
+# expose port
+EXPOSE 80
+
+# run nginx
+CMD ["nginx", "-g", "daemon off;"]
