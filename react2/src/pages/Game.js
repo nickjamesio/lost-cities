@@ -23,7 +23,8 @@ const useStyles = makeStyles(theme => ({
     height: "100vh",
     backgroundPosition: "center",
     backgroundRepeat: "no-repeat",
-    backgroundSize: "cover"
+    backgroundSize: "cover",
+    position: "relative"
   },
   columns: {
     height: "inherit"
@@ -105,6 +106,7 @@ export default function Game(props) {
   return (
     <DndProvider backend={HTML5Backend}>
       <section className={classes.root}>
+        <GameOverDialog isOver={state.over} players={state.players} />
         <Grid container className={classes.columns}>
           <Grid item xs={4} className={classes.cards}>
             <div className={classnames(classes.handWrapper, "opponent")}>
@@ -170,7 +172,6 @@ export default function Game(props) {
           </Grid>
         </Grid>
         {/* <TestFrom /> */}
-        <GameOverDialog isOver={state.over} players={state.players} />
       </section>
     </DndProvider>
   );

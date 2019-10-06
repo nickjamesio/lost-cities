@@ -3,6 +3,16 @@ import React from "react";
 import { makeStyles } from "@material-ui/core";
 
 const useStyles = makeStyles(theme => ({
+  overlay: {
+    display: "flex",
+    justifyContent: "center",
+    alignItems: "center",
+    position: "absolute",
+    zIndex: "2",
+    width: "100%",
+    height: "100%",
+    backgroundColor: "white"
+  },
   "@keyframes spin": {
     from: { transform: "rotate(0deg)" },
     to: { transform: "rotate(360deg)" }
@@ -20,7 +30,11 @@ const useStyles = makeStyles(theme => ({
 function Spinner(props) {
   const classes = useStyles();
 
-  return <div className={classes.loader} />;
+  return (
+    <div className={classes.overlay}>
+      <div className={classes.loader} />
+    </div>
+  );
 }
 
 export default Spinner;

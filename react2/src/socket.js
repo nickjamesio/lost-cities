@@ -14,8 +14,16 @@ import { URL } from "./util/constants";
 let socket = io(`${URL}/game`, {autoConnect: false});
 
 export default function configureSocket(dispatch) {
+  /**
+     * Call to this function is needed to establish the websocket connection.
+     * The socket is not opened until authentication is done. The reson for this
+     * is the current login implementation uses cookies. For some reason, if the
+     * websocket connection is established before the authentication cookie is set,
+     * it will not be sent when a message is sent over the socket. The work around
+     * is to create the connection after the cookie has been set.
+     */
   socket.open();
-  // make sure our socket is connected
+
   socket.on("connect", () => {
     console.log("connected");
   });
