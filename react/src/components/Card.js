@@ -1,121 +1,111 @@
 import React from "react";
-import { withStyles, Grid, Typography } from "@material-ui/core";
 import PropTypes from "prop-types";
-import classNames from "classnames";
 
-// Card images
-import RedCardImage from "../images/red_card.jpg";
-import GreenCardImage from "../images/green_card.jpg";
-import YellowCardImage from "../images/yellow_card.jpg";
-import WhiteCardImage from "../images/white_card.jpg";
-import BlueCardImage from "../images/blue_card.jpg";
-import BackCardImage from "../images/back_card.jpg";
+import { makeStyles } from "@material-ui/core";
+import { useDrag } from "react-dnd";
 
-const styles = {
-  border: {
+import { ItemTypes } from "../util/constants";
+import BlueCard from "../images/blue_card.jpg";
+import RedCard from "../images/red_card.jpg";
+import WhiteCard from "../images/white_card.jpg";
+import YellowCard from "../images/yellow_card.jpg";
+import GreenCard from "../images/green_card.jpg";
+import BackCard from "../images/back_card.jpg";
+
+const useStyles = makeStyles(theme => ({
+  card: {
     display: "flex",
+    maxWidth: "100px",
     flexDirection: "column",
-    alignItems: "center",
     justifyContent: "center",
-    width: "6rem",
-    height: "7rem",
+    alignContent: "center",
+    height: "150px",
     backgroundColor: "black",
-    "&.covered": {
-      height: "2rem"
-    }
+    padding: "0.25rem"
   },
-  image: {
-    width: "5rem",
-    height: "4rem",
-    margin: "0.5rem"
+  img: {
+    height: "calc(100% - 1rem)"
   },
-  imageBack: {
-    width: "5rem",
-    height: "6rem"
-  },
-  redBg: {
-    backgroundColor: "red"
-  },
-  greenBg: {
-    backgroundColor: "green"
-  },
-  blueBg: {
-    backgroundColor: "#6262ff"
-  },
-  yellowBg: {
-    backgroundColor: "yellow"
-  },
-  whiteBg: {
-    backgroundColor: "white"
-  },
-  backBg: {
-    backgroundImage: `url(${BackCardImage})`
-  },
-  redText: {
-    color: "red"
-  },
-  greenText: {
-    color: "green"
-  },
-  blueText: {
-    color: "#6262ff"
-  },
-  yellowText: {
-    color: "yellow"
-  },
-  whiteText: {
-    color: "white"
-  },
-};
+  valueContainer: {
+    fontWeight: "bold",
+    lineHeight: "1",
+    fontSize: ".8rem",
+    display: "flex",
+    justifyContent: "space-between",
+    color: "white",
+    paddingBottom: ".2rem"
+  }
+}));
 
-const Card = props => {
-  const {
-    classes,
-    covered,
-    type,
-    value,
-    className: classNameProp,
-  } = props;
-  const image = classNames(
-    classes[`${type}Bg`],
-    type == "back" ? classes.imageBack : classes.image
-  );
-  const textColor = classes[`${type}Text`];
-  const className = classNames(
-    classes.border,
-    classNameProp,
-    covered ? "covered" : null
-  );
+function Card(props) {
+  const { type, value, position, location } = props;
+  const classes = useStyles();
+  const [{ isDragging }, drag] = useDrag({
+    item: {
+      type: type === "facedown" ? ItemTypes.FACE_DOWN : ItemTypes.FACE_UP,
+      color: type,
+      value,
+      position,
+      location
+    },
+    collect: monitor => ({
+      isDragging: !!monitor.isDragging()
+    })
+  });
+
+  let imgSrc = "";
+  switch (type) {
+    case "red":
+      imgSrc = RedCard;
+      break;
+    case "white":
+      imgSrc = WhiteCard;
+      break;
+    case "yellow":
+      imgSrc = YellowCard;
+      break;
+    case "green":
+      imgSrc = GreenCard;
+      break;
+    case "blue":
+      imgSrc = BlueCard;
+      break;
+    case "facedown":
+    default:
+      imgSrc = BackCard;
+  }
 
   return (
-    <div className={className}>
-      {type != "back" ? (
-        <>
-          <Grid container justify="space-around">
-            <Typography variant="h6" className={textColor}>
-              {value}
-            </Typography>
-            <Typography variant="h6" className={textColor}>
-              {value}
-            </Typography>
-          </Grid>
-        </>
-      ) : null}
-
-      {covered == false ? <div className={image} /> : null}
+    <div className={classes.card} ref={drag}>
+      <div className={classes.valueContainer}>
+        {type !== "facedown" ? (
+          <>
+            <span>{value}</span>
+            <span>{value}</span>
+          </>
+        ) : null}
+      </div>
+      <img src={imgSrc} className={classes.img} alt={`${type} card`} />
     </div>
   );
-};
+}
 
 Card.defaultProps = {
-  value: "",
-  covered: false
+  type: "facedown",
+  value: 0,
+  position: -1,
+  location: 'deck'
 };
 
 Card.propTypes = {
-  type: PropTypes.oneOf(["red", "blue", "white", "green", "yellow", "back"])
-    .isRequired,
-  covered: PropTypes.bool
+  color: PropTypes.string,
+  value: PropTypes.number,
+  position: PropTypes.number,
+  location: PropTypes.string
 };
 
-export default withStyles(styles)(Card);
+export const DECK = 'deck';
+export const HAND = 'hand';
+export const DISCARD = 'discard';
+export const PLAYED = 'played';
+export default Card;

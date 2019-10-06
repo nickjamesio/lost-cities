@@ -1,48 +1,49 @@
 import React from "react";
-import { Typography, withStyles } from "@material-ui/core";
-import classNames from "classnames";
 
-const Count = withStyles({
+import { makeStyles, Typography } from "@material-ui/core";
+import classnames from "classnames";
+
+const useStyles = makeStyles(theme => ({
   root: {
-    width: "2rem",
-    height: "2rem",
-    borderRadius: "50%",
-    border: ".3rem solid black",
-    backgroundColor: "#C79921",
-    position: "absolute",
-    top: "-1rem",
-    right: "5rem",
+    position: "relative"
+  },
+  count: {
     display: "flex",
     justifyContent: "center",
-    alignItems: "center"
+    alignItems: "center",
+    backgroundColor: "#b79060",
+    height: "2.5rem",
+    width: "2.5rem",
+    borderRadius: "50%",
+    border: ".3rem solid black",
+    position: "absolute"
+  },
+  position: {
+    top: "-1.2rem",
+    right: "-1.2rem"
+  },
+  drawPile: {
+    top: "-1.2rem",
+    left: "-1.2rem",
+    transform: "rotate(-90deg)"
   }
-})(props => {
-  const { classes, count } = props;
+}));
+
+function CardCount({ children, count, drawPile }) {
+  const classes = useStyles();
+  const countStyles = classnames(
+    classes.count,
+    drawPile ? classes.drawPile : classes.position
+  );
 
   return (
     <div className={classes.root}>
-      <Typography variant="h6">{count}</Typography>
+      <div className={countStyles}>
+        <Typography variant="h6">{count}</Typography>
+      </div>
+      {children}
     </div>
   );
-});
+}
 
-const styles = {
-  root: {
-      position: 'relative',
-      cursor: 'pointer'
-  }
-};
-
-const CardCount = props => {
-  const { cards, children, classes, className: classNameProp, handleClick } = props;
-  const className = classNames(classes.root, classNameProp);
-
-  return (
-    <div className={className} onClick={handleClick}>
-      <Count count={cards.length} />
-      {children()}
-    </div>
-  );
-};
-
-export default withStyles(styles)(CardCount);
+export default CardCount;

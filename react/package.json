@@ -1,32 +1,38 @@
 {
-  "name": "react-static-example-basic",
+  "name": "react2",
+  "version": "0.1.0",
   "private": true,
-  "scripts": {
-    "start": "react-static start",
-    "stage": "react-static build --staging",
-    "build": "react-static build",
-    "bundle": "react-static bundle",
-    "export": "react-static export",
-    "serve": "serve dist -p 3000 -s"
-  },
   "dependencies": {
-    "@material-ui/core": "^3.9.0",
-    "@material-ui/icons": "^3.0.2",
+    "@material-ui/core": "^4.2.1",
+    "@material-ui/icons": "^4.2.1",
     "@reach/router": "^1.2.1",
-    "axios": "^0.18.0",
     "classnames": "^2.2.6",
-    "react": "^16.6.3",
-    "react-dom": "^16.6.3",
-    "react-hot-loader": "^4.3.12",
-    "react-jss": "^8.6.1",
-    "react-static": "^6.0.18",
-    "react-static-plugin-jss": "^6.3.0",
+    "react": "^16.8.6",
+    "react-dnd": "^9.3.2",
+    "react-dnd-html5-backend": "^9.3.2",
+    "react-dom": "^16.8.6",
+    "react-scripts": "3.0.1",
     "socket.io-client": "^2.2.0"
   },
-  "devDependencies": {
-    "eslint-config-react-tools": "1.x.x",
-    "node-fetch": "^2.3.0",
-    "prop-types": "^15.6.2",
-    "serve": "10.1.1"
+  "scripts": {
+    "start": "react-scripts start",
+    "build": "react-scripts build",
+    "test": "react-scripts test",
+    "eject": "react-scripts eject"
+  },
+  "eslintConfig": {
+    "extends": "react-app"
+  },
+  "browserslist": {
+    "production": [
+      ">0.2%",
+      "not dead",
+      "not op_mini all"
+    ],
+    "development": [
+      "last 1 chrome version",
+      "last 1 firefox version",
+      "last 1 safari version"
+    ]
   }
 }

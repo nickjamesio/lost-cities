@@ -1,76 +1,93 @@
 import React from "react";
-import { withStyles } from "@material-ui/core";
-import classNames from "classnames";
+import { makeStyles } from "@material-ui/core";
+import classnames from "classnames";
+import { useDrop } from "react-dnd";
 
-import RedDiscard from "../images/red_discard.jpg";
-import GreenDiscard from "../images/green_discard.jpg";
-import YellowDiscard from "../images/yellow_discard.jpg";
-import WhiteDiscard from "../images/white_discard.jpg";
-import BlueDiscard from "../images/blue_discard.jpg";
-import Card from "../components/Card";
-import CardCount from "../components/CardCount";
+import Card, { DISCARD, HAND } from "./Card";
+import CardCount from "./CardCount";
+import YellowDiscard from "../images/yellow_discard.png";
+import BlueDiscard from "../images/blue_discard.png";
+import WhiteDiscard from "../images/white_discard.png";
+import GreenDiscard from "../images/green_discard.png";
+import RedDiscard from "../images/red_discard.png";
+import { useGameState } from "../context/GameStateProvider";
+import { ItemTypes } from "../util/constants";
+import { discardCard } from "../socket";
+import Overlay from "./Overlay";
 
-const styles = {
-  discard: {
-    width: "6rem",
-    height: "8rem",
-    "&.red": {
-      backgroundImage: `url(${RedDiscard})`
-    },
-    "&.blue": {
-      backgroundImage: `url(${BlueDiscard})`
-    },
-    "&.green": {
-      backgroundImage: `url(${GreenDiscard})`
-    },
-    "&.yellow": {
-      backgroundImage: `url(${YellowDiscard})`
-    },
-    "&.white": {
-      backgroundImage: `url(${WhiteDiscard})`
-    }
-  },
-  overlay: {
+const useStyles = makeStyles(theme => ({
+  discardPile: {
     display: "flex",
     justifyContent: "center",
     alignItems: "center",
-    width: "100%",
-    height: "100%",
-    "&.red": {
-      backgroundColor: "rgba(255,0,0,0.3)"
-    },
-    "&.blue": {
-      backgroundColor: "rgba(0, 0, 255, 0.3)"
-    },
-    "&.green": {
-      backgroundColor: "rgba(0, 255, 0, 0.3)"
-    },
-    "&.yellow": {
-      backgroundColor: "rgba(255, 255, 0, 0.3)"
-    },
-    "&.white": {
-      backgroundColor: "rgba(255, 255, 255, 0.5)"
-    }
+    position: "relative",
+    width: "100%"
+  },
+  discardPileImage: {
+    height: "100%"
+  },
+  cardWrapper: {
+    position: "absolute",
+    zIndex: "1"
   }
-};
+}));
 
-const DiscardPile = props => {
-  const { classes, cards, color, handleClick } = props;
-  const discardClasses = classNames(classes.discard, color);
-  const overlayClasses = classNames(classes.overlay, color);
-  const card = cards.length > 0 ? cards[cards.length - 1] : null;
+export default function DiscardPile(props) {
+  const { color, cards, className: classNameProp } = props;
+  const classes = useStyles();
+  const state = useGameState();
+  const card = cards.length ? cards[cards.length - 1] : null;
+  const [{ isOver, canDrop }, drop] = useDrop({
+    accept: ItemTypes.FACE_UP,
+    drop: item => {
+      discardCard(state.gameId,item.position);
+    },
+    canDrop: item => {
+      return item.color == color && state.currentPlayer == state.position && item.location === HAND;
+    },
+    collect: monitor => ({
+      isOver: monitor.isOver(),
+      canDrop: monitor.canDrop()
+    })
+  });
+
+  let imgSrc;
+  switch (color) {
+    case "red":
+      imgSrc = RedDiscard;
+      break;
+    case "white":
+      imgSrc = WhiteDiscard;
+      break;
+    case "yellow":
+      imgSrc = YellowDiscard;
+      break;
+    case "green":
+      imgSrc = GreenDiscard;
+      break;
+    case "blue":
+      imgSrc = BlueDiscard;
+      break;
+    default:
+      imgSrc = "";
+  }
 
   return (
-    <div className={discardClasses}>
-      <div className={overlayClasses}>
+    <div className={classnames(classes.discardPile, classNameProp)} ref={drop}>
+      <img
+        src={imgSrc}
+        className={classes.discardPileImage}
+        alt={`${color} discard pile`}
+      />
+      <div className={classes.cardWrapper}>
         {card ? (
-          <CardCount cards={cards} handleClick={(e) => handleClick(e, color)}>
-            {() => (<Card type={color} value={card} />)}
+          <CardCount count={cards.length}>
+            <Card type={card.typ} value={card.val} location={DISCARD} />
           </CardCount>
         ) : null}
       </div>
+      {!isOver && canDrop && <Overlay color="black" />}
+      {isOver && canDrop && <Overlay color={color} />}
     </div>
   );
-};
-
-export default withStyles(styles)(DiscardPile);
+}

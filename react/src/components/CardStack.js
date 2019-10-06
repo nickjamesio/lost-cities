@@ -1,55 +1,80 @@
-import React from 'react';
-import { Grid, withStyles } from '@material-ui/core';
-import classNames from 'classnames';
-import PropTypes from 'prop-types';
+import React from "react";
+import PropTypes from "prop-types";
+import { makeStyles } from "@material-ui/core";
+import { useDrop } from "react-dnd";
 
-import Card from '../components/Card';
+import Overlay from "./Overlay";
+import Card, { PLAYED } from "./Card";
+import { HAND } from "./Card";
+import { playCard } from "../socket";
+import { useGameState } from "../context/GameStateProvider";
+import { ItemTypes } from "../util/constants";
 
-const styles = {
-    root: {
-        display: 'flex',
-        flexDirection: 'column',
-        paddingLeft: '0.5rem',
-        minWidth: '6rem',
-        minHeight: '7rem'
+const useStyles = makeStyles(theme => ({
+  cardStack: {
+    display: "flex",
+    flexDirection: "column",
+    alignItems: "center",
+    width: "100%",
+    height: "100%",
+  },
+  card: {
+    position: "absolute",
+    "&:not(:first-child)": {}
+  }
+}));
+
+function CardStack(props) {
+  const { cards, color, opponent } = props;
+  const classes = useStyles();
+  const state = useGameState();
+  const [{ isOver, canDrop }, drop] = useDrop({
+    accept: ItemTypes.FACE_UP,
+    drop: item => {
+      playCard(state.gameId, item.position);
     },
-    bottom: {
-        justifyContent: 'flex-end'
+    canDrop: item => {
+      const lastCard = cards.length > 0 ? cards[cards.length - 1] : {val: 0};
+      const itemValue = item.value === 'h' ? 1 : parseInt(item.value);
+      const lastCardValue = lastCard.val === 'h' ? 1 : parseInt(lastCard.val);
+      return (
+        item.color === color &&
+        state.currentPlayer === state.position &&
+        item.location === HAND &&
+        itemValue >= lastCardValue &&
+        !opponent
+      );
     },
-    top: {
-        justifyContent: 'flex-start'
-    }
-};
+    collect: monitor => ({
+      isOver: monitor.isOver(),
+      canDrop: monitor.canDrop()
+    })
+  });
 
-const CardStack = (props) => {
-    const {
-        cards,
-        type,
-        classes,
-        className: classNameProp,
-        direction
-    } = props;
-    const className = classNames(
-        classes.root,
-        classNameProp,
-        direction == 'top' ? classes.top : classes.bottom)
-
-    return (
-        <div className={className}>
-            {cards.map((value, index) => (
-                <Card
-                    key={index}
-                    type={type}
-                    value={value}
-                    covered={index !== cards.length - 1}
-                />
-            ))}
+  return (
+    <div className={classes.cardStack} ref={drop}>
+      {cards.map((card, index) => (
+        <div
+          key={`${card.typ}${index}`}
+          className={classes.card}
+          style={{ top: index * 21 }}
+        >
+          <Card type={card.typ} value={card.val} location={PLAYED} />
         </div>
-    );
+      ))}
+      {!isOver && canDrop && <Overlay color="black" />}
+      {isOver && canDrop && <Overlay color={color} />}
+    </div>
+  );
+}
+
+CardStack.defaultProps = {
+  opponent: false,
 };
 
 CardStack.propTypes = {
-    direction: PropTypes.string.isRequired
+  opponent: PropTypes.bool,
+  color: PropTypes.string.isRequired
 };
 
-export default withStyles(styles)(CardStack);
+export default CardStack;

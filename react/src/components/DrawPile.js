@@ -1,23 +1,27 @@
-import React from 'react';
-import { withStyles } from '@material-ui/core';
-import PropTypes from 'prop-types';
-import classNames from 'classnames';
+import React from "react";
+import { makeStyles } from "@material-ui/core";
 
-import Card from '../components/Card';
-import CardCount from '../components/CardCount';
+import CardCount from "./CardCount";
+import Card, { DECK } from "./Card";
 
-const styles = {};
+const useStyles = makeStyles(theme => ({
+  drawPile: {
+    transform: "rotate(90deg)",
+    display: "inline-block"
+  }
+}));
 
-const DrawPile = (props) => {
-    const { className: classNameProp, drawPile, handleClick } = props;
-    const className = classNames(classNameProp);
+function DrawPile(props) {
+  const { cards } = props;
+  const classes = useStyles();
 
-    return (
-        <CardCount cards={drawPile} className={className} handleClick={handleClick}>
-            {() => <Card type="back" />}
-        </CardCount>
-    );
-};
+  return cards.length ? (
+    <div className={classes.drawPile}>
+      <CardCount count={cards.length} drawPile>
+        <Card type="facedown" location={DECK} />
+      </CardCount>
+    </div>
+  ) : null;
+}
 
-
-export default withStyles(styles)(DrawPile)
+export default DrawPile;
