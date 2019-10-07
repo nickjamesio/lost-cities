@@ -42,7 +42,8 @@ class ProductionConfig(BaseConfig):
     SQLALCHEMY_DATABASE_URI = os.environ.get('DATABASE_URL')
     JWT_ACCESS_COOKIE_PATH = '/'
     JWT_REFRESH_COOKIE_PATH = '/'
-    JWT_COOKIE_DOMAIN="http://lostcities.nickjames.io"
+    SESSION_COOKIE_DOMAIN=".nickjames.io"
+    JWT_COOKIE_DOMAIN=".nickjames.io"
     CORS_ORIGINS=["http://lostcities.nickjames.io"]
     CORS_SUPPORTS_CREDENTIALS=True
     # TODO change this in future

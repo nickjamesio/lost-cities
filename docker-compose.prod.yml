@@ -21,7 +21,7 @@ services:
     expose:
       - 5000
     environment:
-      - FLASK_ENV=production
+      - SECRET_KEY=testingprodsecretkey
       - APP_SETTINGS=src.config.ProductionConfig
       - DATABASE_URL=postgres://postgres:postgres@db:5432/lostcities_prod
     depends_on:
