@@ -35,7 +35,7 @@ def authenticated_only(f):
         except NoAuthorizationError as e:
             emit('not authorized', {'message': str(e)})
             current_app.logger.error("Disconnecting socket" + str(e))
-            # disconnect()
+            disconnect()
         else:
             return f(*args, **kwargs)
     return wrapper

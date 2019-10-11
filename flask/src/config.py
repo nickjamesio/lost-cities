@@ -42,9 +42,12 @@ class ProductionConfig(BaseConfig):
     SQLALCHEMY_DATABASE_URI = os.environ.get('DATABASE_URL')
     JWT_ACCESS_COOKIE_PATH = '/'
     JWT_REFRESH_COOKIE_PATH = '/'
-    SESSION_COOKIE_DOMAIN=".nickjames.io"
-    JWT_COOKIE_DOMAIN=".nickjames.io"
-    CORS_ORIGINS=["http://lostcities.nickjames.io"]
+    SESSION_COOKIE_DOMAIN=".lostcities.local"
+    JWT_COOKIE_DOMAIN=".lostcities.local"
+    CORS_ORIGINS=["http://lostcities.local", "http://lostcities.local:3000"]
+    # SESSION_COOKIE_DOMAIN=".nickjames.io"
+    # JWT_COOKIE_DOMAIN=".nickjames.io"
+    # CORS_ORIGINS=["http://lostcities.nickjames.io", "http://lostcities.local:3000"]
     CORS_SUPPORTS_CREDENTIALS=True
     # TODO change this in future
     # https://flask-jwt-extended.readthedocs.io/en/latest/tokens_in_cookies.html

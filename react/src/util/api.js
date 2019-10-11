@@ -1,7 +1,7 @@
-import { URL } from "./constants";
+import { API_URL } from "./constants";
 
 export async function getGame(gid) {
-  const response = await fetch(`${URL}/mygame/${gid}`, {
+  const response = await fetch(`${API_URL}/mygame/${gid}`, {
     method: "get",
     credentials: "include"
   });

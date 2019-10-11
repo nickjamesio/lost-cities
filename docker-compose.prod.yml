@@ -1,4 +1,4 @@
-version: '3.5'
+version: '3.7'
 
 services:
   client:
@@ -17,7 +17,7 @@ services:
     build:
       context: ./flask
       dockerfile: Dockerfile-prod
-    restart: unless-stopped    
+    restart: unless-stopped
     expose:
       - 5000
     environment:

@@ -9,9 +9,9 @@ import {
   GAME_CREATED,
   GAME_JOINED
 } from "./context/GameStateProvider";
-import { URL } from "./util/constants";
+import { SOCKET_URL } from "./util/constants";
 
-let socket = io(`${URL}/game`, {autoConnect: false});
+let socket = io(`${SOCKET_URL}/game`, {autoConnect: false});
 
 export default function configureSocket(dispatch) {
   /**

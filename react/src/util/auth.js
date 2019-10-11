@@ -1,7 +1,7 @@
-import { URL } from "./constants";
+import { API_URL } from "./constants";
 
 export async function login(form) {
-  const response = await fetch(`${URL}/login`, {
+  const response = await fetch(`${API_URL}/login`, {
     method: "post",
     headers: {
       "Content-type": "application/json"
@@ -17,7 +17,7 @@ export async function login(form) {
 }
 
 export async function register(form) {
-  const response = await fetch(`${URL}/register`, {
+  const response = await fetch(`${API_URL}/register`, {
     method: "post",
     headers: {
       "Content-type": "application/json"
@@ -34,7 +34,7 @@ export async function register(form) {
 }
 
 export async function logout() {
-  const response = await fetch(`${URL}/logout`, {
+  const response = await fetch(`${API_URL}/logout`, {
     method: "get",
     credentials: "include"
   });
@@ -43,7 +43,7 @@ export async function logout() {
 }
 
 export async function me(form) {
-  const response = await fetch(`${URL}/me`, {
+  const response = await fetch(`${API_URL}/me`, {
     method: "get",
     credentials: "include"
   });
