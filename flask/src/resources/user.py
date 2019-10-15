@@ -98,7 +98,7 @@ class UserLogin(Resource):
         if not user:
             user = UserModel.find_by_email(data['username'])
 
-        if user and user.password == data['password']:
+        if user and user.is_correct_password(data['password']):
             access_token = create_access_token(identity=user.id, fresh=True)
             refresh_token = create_refresh_token(user.id)
             

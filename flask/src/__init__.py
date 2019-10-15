@@ -6,6 +6,7 @@ from flask_cors import CORS
 from flask_socketio import SocketIO
 from flask_jwt_extended import JWTManager
 from flask_sqlalchemy import SQLAlchemy
+from flask_bcrypt import Bcrypt
 
 
 # instantiate the extensions
@@ -14,6 +15,7 @@ socketio = SocketIO()
 jwt = JWTManager()
 cors = CORS()
 db = SQLAlchemy()
+bcrypt = Bcrypt()
 
 
 @jwt.user_claims_loader
@@ -93,6 +95,7 @@ def create_app():
     api.init_app(app)
     jwt.init_app(app)
     cors.init_app(app)
-    socketio.init_app(app)
+    bcrypt.init_app(app)
+    socketio.init_app(app, cors_allowed_origins=app.config['CORS_ORIGINS'])
 
     return app

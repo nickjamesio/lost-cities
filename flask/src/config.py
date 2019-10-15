@@ -21,7 +21,7 @@ class DevelopmentConfig(BaseConfig):
     DEBUG_TB_ENABLED = True
     JWT_ACCESS_COOKIE_PATH = '/'
     JWT_REFRESH_COOKIE_PATH = '/'
-    JWT_COOKIE_DOMAIN="lostcities.local"
+    JWT_COOKIE_DOMAIN=".lostcities.local"
     CORS_ORIGINS=["http://lostcities.local:3000", "http://lostcities.local"]
     CORS_SUPPORTS_CREDENTIALS=True
     # TODO change this in future

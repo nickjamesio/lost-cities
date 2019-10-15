@@ -1,4 +1,6 @@
 from src import db
+from src import bcrypt
+from sqlalchemy.ext.hybrid import hybrid_property, hybrid_method
 
 
 class UserModel(db.Model):
@@ -9,7 +11,7 @@ class UserModel(db.Model):
     first_name = db.Column(db.String(40))
     last_name = db.Column(db.String(40))
     email = db.Column(db.String(80))
-    password = db.Column(db.String(40))
+    _password = db.Column(db.Binary(60), nullable=False)
 
     def __init__(self, username, password, email, first="", last=""):
         self.username = username
@@ -31,6 +33,18 @@ class UserModel(db.Model):
     def delete_from_db(self):
         db.session.delete(self)
         db.session.commit()
+
+    @hybrid_property
+    def password(self):
+        return self._password
+
+    @password.setter
+    def password(self, plaintext_password):
+        self._password = bcrypt.generate_password_hash(plaintext_password)
+
+    @hybrid_method
+    def is_correct_password(self, plaintext_password):
+        return bcrypt.check_password_hash(self.password, plaintext_password)
 
     @classmethod
     def find_all(cls):

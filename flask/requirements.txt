@@ -2,6 +2,7 @@ eventlet==0.25.0
 gunicorn==19.9.0
 Flask-SocketIO
 Flask==1.0.3
+Flask-Bcrypt==0.7.1
 Flask-Cors==3.0.8
 Flask-JWT-Extended==3.18.2
 Flask-RESTful==0.3.7

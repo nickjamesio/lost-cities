@@ -8,10 +8,13 @@ services:
     volumes:
       - './react:/usr/src/app'
       - '/usr/src/app/node_modules'
+    expose:
+      - 3000
     ports:
       - 3000:3000
     environment:
       - NODE_ENV=development
+      - REACT_APP_SOCKET_URL=http://lostcities.local
       - REACT_APP_API_URL=http://lostcities.local
     depends_on:
       - api
