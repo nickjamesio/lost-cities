@@ -12,7 +12,7 @@ RUN npm install
 RUN npm install react-scripts@3.0.1
 
 # create build
-COPY . .
+COPY ./ .
 RUN npm run build
 
 
