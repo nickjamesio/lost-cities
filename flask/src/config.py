@@ -44,10 +44,7 @@ class ProductionConfig(BaseConfig):
     JWT_REFRESH_COOKIE_PATH = '/'
     SESSION_COOKIE_DOMAIN=".lostcities.nickjames.io"
     JWT_COOKIE_DOMAIN=".lostcities.nickjames.io"
-    CORS_ORIGINS=["http://lostcities.nickjames.io"]
-    # SESSION_COOKIE_DOMAIN=".nickjames.io"
-    # JWT_COOKIE_DOMAIN=".nickjames.io"
-    # CORS_ORIGINS=["http://lostcities.nickjames.io", "http://lostcities.local:3000"]
+    CORS_ORIGINS=["https://lostcities.nickjames.io"]
     CORS_SUPPORTS_CREDENTIALS=True
     # TODO change this in future
     # https://flask-jwt-extended.readthedocs.io/en/latest/tokens_in_cookies.html
