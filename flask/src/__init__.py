@@ -93,6 +93,6 @@ def create_app():
     api.init_app(app)
     jwt.init_app(app)
     cors.init_app(app)
-    socketio.init_app(app)
+    socketio.init_app(app, cors_allowed_origins=app.config['CORS_ORIGINS'])
 
     return app
