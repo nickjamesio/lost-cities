@@ -8,7 +8,6 @@ venv/
 # production
 react/dist
 react/tmp
-react/public
 flask/**/*.json
 
 # misc

@@ -37,6 +37,8 @@ function CardStack(props) {
       const lastCard = cards.length > 0 ? cards[cards.length - 1] : {val: 0};
       const itemValue = item.value === 'h' ? 1 : parseInt(item.value);
       const lastCardValue = lastCard.val === 'h' ? 1 : parseInt(lastCard.val);
+      console.log({lastCard, itemValue, lastCardValue, item, color, currentPlayer: state.currentPlayer, position: state.position});
+
       return (
         item.color === color &&
         state.currentPlayer === state.position &&
@@ -51,6 +53,7 @@ function CardStack(props) {
     })
   });
 
+  console.log({isOver, canDrop});
   return (
     <div className={classes.cardStack} ref={drop}>
       {cards.map((card, index) => (

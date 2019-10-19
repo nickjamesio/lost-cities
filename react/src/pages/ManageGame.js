@@ -56,7 +56,9 @@ function NewGame(props) {
             <FormControlLabel value="2" control={<Radio />} label="Second" />
           </RadioGroup>
         </FormControl>
-        <Button variant="contained" type="submit" color="primary">Create game</Button>
+        <Button type="submit" variant="contained" color="secondary">
+          Create Game
+        </Button>
       </form>
     </Paper>
   );
@@ -123,7 +125,9 @@ function JoinGame(props) {
             />
           </RadioGroup>
         </FormControl>
-        <Button variant="contained" type="submit" color="primary">Join game</Button>
+        <Button type="submit" variant="contained" color="secondary">
+          Join Game
+        </Button>
       </form>
     </Paper>
   );
