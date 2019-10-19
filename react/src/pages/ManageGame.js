@@ -2,7 +2,7 @@ import React from "react";
 import { makeStyles } from "@material-ui/core/styles";
 import Radio from "@material-ui/core/Radio";
 import RadioGroup from "@material-ui/core/RadioGroup";
-import Input from "@material-ui/core/Input";
+import Button from "@material-ui/core/Button";
 import FormControlLabel from "@material-ui/core/FormControlLabel";
 import FormControl from "@material-ui/core/FormControl";
 import FormLabel from "@material-ui/core/FormLabel";
@@ -42,21 +42,21 @@ function NewGame(props) {
   return (
     <Paper className={classes.root}>
       <form className={classes.form} onSubmit={handleSubmit}>
-      <Typography variant="h4">New Game</Typography>
-      <FormControl component="fieldset" className={classes.formControl}>
-        <FormLabel component="legend">Player position</FormLabel>
-        <RadioGroup
-          aria-label="Player position"
-          name="position"
-          className={classes.group}
-          value={form.position}
-          onChange={handleChange}
-        >
-          <FormControlLabel value="1" control={<Radio />} label="First" />
-          <FormControlLabel value="2" control={<Radio />} label="Second" />
-        </RadioGroup>
-      </FormControl>
-      <Input type="submit" value="Create Game" />
+        <Typography variant="h4">New Game</Typography>
+        <FormControl component="fieldset" className={classes.formControl}>
+          <FormLabel component="legend">Player position</FormLabel>
+          <RadioGroup
+            aria-label="Player position"
+            name="position"
+            className={classes.group}
+            value={form.position}
+            onChange={handleChange}
+          >
+            <FormControlLabel value="1" control={<Radio />} label="First" />
+            <FormControlLabel value="2" control={<Radio />} label="Second" />
+          </RadioGroup>
+        </FormControl>
+        <Button type="submit" variant="contained" color="secondary">Create Game</Button>
       </form>
     </Paper>
   );
@@ -123,7 +123,7 @@ function JoinGame(props) {
             />
           </RadioGroup>
         </FormControl>
-        <Input type="submit" value="Join Game"/>
+        <Button type="submit" variant="contained" color="secondary">Join Game</Button>
       </form>
     </Paper>
   );
