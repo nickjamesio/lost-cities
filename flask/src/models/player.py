@@ -1,3 +1,4 @@
+from sqlalchemy import and_
 from src import db
 from src.models.types.json_field import JSONEncoded
 
@@ -39,6 +40,13 @@ class PlayerModel(db.Model):
     def save_to_db(self):
         db.session.add(self)
         db.session.commit()
+
+    @classmethod
+    def find_by_id(cls, pid):
+        return cls.query.filter_by(user_id=pid).first()
+
+    def find_my_games(self):
+        return self.query.filter(PlayerModel.user_id == self.user_id).all()
 
     def __repr__(self):
         return '<Player {}>'.format(self.user_id)

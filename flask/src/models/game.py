@@ -31,5 +31,27 @@ class GameModel(db.Model):
     def find_by_id(cls, gid):
         return cls.query.filter_by(id=gid).first()
 
+    @classmethod
+    def find_open_games(cls):
+        # TODO for now this will work with small amounts of games.
+        # However, this will not work well with large amounts of games.
+        # Pagination would be ideal
+        with db.engine.connect() as con:
+            results = con.execute("""
+                SELECT game.id as gameid, users.username
+                FROM game
+                JOIN player
+                ON player.game_id = game.id
+                JOIN users
+                ON player.user_id = users.id
+                WHERE (
+                    SELECT COUNT(1)
+                    FROM player
+                    WHERE game_id=game.id
+                ) = 1;
+            """)
+            
+        return [{"gameid": item[0], "username": item[1]} for item in results]
+
     def __repr__(self):
         return '<Game {}>'.format(self.id)
