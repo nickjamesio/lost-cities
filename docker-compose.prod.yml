@@ -1,19 +1,10 @@
 version: '3.7'
 
 services:
-  client:
-    build:
-      context: ./react
-      dockerfile: Dockerfile-prod
-    restart: unless-stopped
-    expose:
-      - 80 
-    depends_on:
-      - api
 
-  api:
+  lostcities_api:
     build:
-      context: ./flask
+      context: ./api
       dockerfile: Dockerfile-prod
     restart: unless-stopped
     expose:
@@ -21,13 +12,13 @@ services:
     environment:
       - SECRET_KEY=testingprodsecretkey
       - APP_SETTINGS=src.config.ProductionConfig
-      - DATABASE_URL=postgres://postgres:postgres@db:5432/lostcities_prod
+      - DATABASE_URL=postgres://postgres:postgres@lostcities_db:5432/lostcities_prod
     depends_on:
-      - db
+      - lostcities_db
     
-  db:
+  lostcities_db:
     build:
-        context: ./flask/db
+        context: ./api/db
         dockerfile: Dockerfile
     restart: unless-stopped    
     expose:
@@ -35,26 +26,3 @@ services:
     environment:
         - POSTGRES_USER=postgres
         - POSTGRES_PASSWORD=postgres
-    
-  nginx:
-    build:
-      context: ./nginx
-      dockerfile: Dockerfile-prod
-    restart: unless-stopped
-    ports:
-      - 80:80
-      - 443:443
-    volumes:
-      - ./certbot/conf:/etc/letsencrypt
-      - ./certbot/www:/var/www/certbot
-    depends_on:
-      - api
-      - client
-    command: "/bin/sh -c 'while :; do sleep 6h & wait $${!}; nginx -s reload; done & nginx -g \"daemon off;\"'"
-
-  certbot:
-    image: certbot/certbot
-    volumes:
-      - ./certbot/conf:/etc/letsencrypt
-      - ./certbot/www:/var/www/certbot
-    entrypoint: "/bin/sh -c 'trap exit TERM; while :; do certbot renew; sleep 12h & wait $${!}; done;'"

@@ -98,4 +98,10 @@ def create_app():
     bcrypt.init_app(app)
     socketio.init_app(app, cors_allowed_origins=app.config['CORS_ORIGINS'])
 
+    # Create db before first request if not exist
+    @app.before_first_request
+    def create_db():
+        db.create_all()
+        db.session.commit()
+
     return app

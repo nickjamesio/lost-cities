@@ -19,8 +19,8 @@ from flask import request
 
 class Home(Resource):
     def get(self):
-        player = PlayerModel.find_by_id(2)
-        games = player.find_my_games()
+        # player = PlayerModel.find_by_id(2)
+        # games = player.find_my_games()
         return {'message': 'worked!'}, 200
 
     @jwt_required

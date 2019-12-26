@@ -1,61 +1,38 @@
 version: '3.7'
 
 services:
-  client:
+  lostcities_api:
     build:
-      context: ./react
-      dockerfile: Dockerfile
-    volumes:
-      - './react:/usr/src/app'
-      - '/usr/src/app/node_modules'
-    expose:
-      - 3000
-    ports:
-      - 3000:3000
-    environment:
-      - NODE_ENV=development
-      - REACT_APP_API_URL=http://lostcities.local
-      - REACT_APP_SOCKET_URL=http://lostcities.local
-    depends_on:
-      - api
-
-  api:
-    build:
-      context: ./flask
+      context: ./api
       dockerfile: Dockerfile
     ports:
       - 5000:5000
     expose:
       - 5000
     volumes:
-      - ./flask:/usr/src/app
+      - ./api:/usr/src/app
     environment:
       - FLASK_APP=src:create_app()
       - FLASK_ENV=production
       - APP_SETTINGS=src.config.DevelopmentConfig
-      - DATABASE_URL=postgres://postgres:postgres@db:5432/lostcities_dev
+      - DATABASE_URL=postgres://postgres:postgres@lostcities_db:5432/lostcities_dev
     depends_on:
-      - db
+      - lostcities_db
 
-  db:
+  lostcities_db:
     build:
-        context: ./flask/db
-        dockerfile: Dockerfile
+      context: ./api/db
+      dockerfile: Dockerfile
     ports:
         - 5432:5432
     expose:
       - 5432
     environment:
-        - POSTGRES_USER=postgres
-        - POSTGRES_PASSWORD=postgres
+      - POSTGRES_USER=postgres
+      - POSTGRES_PASSWORD=postgres
 
-  nginx:
-    build:
-      context: ./nginx
-      dockerfile: Dockerfile
-    ports:
-      - 80:80
-    depends_on:
-      - api
-      - client
-
+networks:
+  default:
+    external:
+      name: nginx_proxy
+    
