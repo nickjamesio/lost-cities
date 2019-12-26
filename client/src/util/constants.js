@@ -1,9 +1,9 @@
 export const API_URL = proces.env.NODE_ENV === 'dev' ?
   'http://api.lostcities.local' :
-  'https://api_lostcities.nickjames.io';
+  'https://api.lostcities.nickjames.io';
 export const SOCKET_URL = proces.env.NODE_ENV === 'dev' ?
   'http://api.lostcities.local' :
-  'https://api_lostcities.nickjames.io';
+  'https://api.lostcities.nickjames.io';
 
 
 export const ItemTypes = {
