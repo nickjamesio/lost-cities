@@ -26,3 +26,8 @@ services:
     environment:
       - POSTGRES_USER=postgres
       - POSTGRES_PASSWORD=postgres
+
+networks:
+  default:
+    external:
+      name: nginx_proxy
